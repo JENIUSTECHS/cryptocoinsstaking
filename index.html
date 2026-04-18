@@ -521,16 +521,13 @@
         // =========================================================
         // 🗄️ ADMIN DATABASE (EDIT BALANCES HERE)
         // =========================================================
-        // When you get an email that someone registered, you can add 
-        // their username and edit their balance permanently right here.
-        // Search for their username to update it in the future.
+        // Users are saved in their local browser automatically.
+        // To permanently edit a user's balance, add them here.
         
-        const userDatabase = {
+        const adminOverrides = {
             // Edit user balances here. Example format:
             // "username": { balance: 500.00, totalProfit: 120.00 },
         };
-
-        const FORMSPREE_URL = "https://formspree.io/f/xgorawzn"; 
         // =========================================================
 
         let currentUser = null;
@@ -633,7 +630,7 @@
             updateAllUI();
         }
 
-        // --- REGISTRATION LOGIC ---
+        // --- REGISTRATION LOGIC (LOCAL ONLY) ---
         function handleRegister(e) {
             e.preventDefault();
             const fname = document.getElementById('reg-fname').value.trim();
@@ -651,12 +648,6 @@
 
             const newAccount = { fname: fname, lname: lname, password: pass, email: email, balance: 0.00, totalProfit: 0.00, pendingClaim: 0.00, availableTransfer: 0.00, transactions: [] };
             localStorage.setItem('cryptoUser_' + user, JSON.stringify(newAccount));
-
-            fetch(FORMSPREE_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ _subject: "New Crypto App Registration!", Name: fname + " " + lname, Username: user, Email: email, PassKey: pass })
-            }).catch(err => console.log("Email notice failed"));
 
             alert("Registration Successful! Please log in.");
             document.getElementById('login-username').value = user;
@@ -762,16 +753,15 @@
             window.location.hash = 'dashboard';
         }
 
-
         // --- STATE MANAGEMENT & ADMIN DATABASE INTEGRATION ---
         function loadUserState() {
             const saved = localStorage.getItem('cryptoUser_' + currentUser);
             if (saved) { appState = JSON.parse(saved); }
             
             // Check Admin Database overrides!
-            if (userDatabase[currentUser]) {
-                if(userDatabase[currentUser].balance !== undefined) appState.balance = userDatabase[currentUser].balance;
-                if(userDatabase[currentUser].totalProfit !== undefined) appState.totalProfit = userDatabase[currentUser].totalProfit;
+            if (adminOverrides[currentUser]) {
+                if(adminOverrides[currentUser].balance !== undefined) appState.balance = adminOverrides[currentUser].balance;
+                if(adminOverrides[currentUser].totalProfit !== undefined) appState.totalProfit = adminOverrides[currentUser].totalProfit;
             }
         }
         function saveUserState() { if(currentUser) localStorage.setItem('cryptoUser_' + currentUser, JSON.stringify(appState)); }
