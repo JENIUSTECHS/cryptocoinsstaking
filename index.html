@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crypto App - Complete Platform</title>
+    <title>Crypto Daily Staking</title>
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     
     <style>
@@ -20,7 +20,7 @@
         .app-container { width: 100%; max-width: 414px; background-color: var(--bg-dark); height: 100vh; display: flex; flex-direction: column; position: relative; overflow-x: hidden; }
 
         /* --- AUTHENTICATION --- */
-        .auth-view { display: flex; flex-direction: column; align-items: center; padding: 40px 30px; text-align: center; height: 100%; overflow-y: auto; justify-content: center; }
+        .auth-view { display: none; flex-direction: column; align-items: center; padding: 40px 30px; text-align: center; height: 100%; overflow-y: auto; justify-content: center; }
         .auth-logo { font-size: 48px; margin-bottom: 20px; }
         .auth-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
         .auth-subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 30px; }
@@ -45,27 +45,26 @@
         .forgot-link { color: var(--accent-blue); font-size: 12px; text-align: right; margin-top: -6px; cursor: pointer; font-weight: bold; }
         .password-note { color: var(--accent-yellow); font-size: 11px; margin-top: 6px; padding-left: 4px; line-height: 1.4; font-weight: 500;}
 
-        /* --- MAIN LAYOUT & NEW HEADER --- */
+        /* --- MAIN LAYOUT & HEADER --- */
         .main-views { display: none; flex-direction: column; height: 100vh; width: 100%; overflow-y: auto; padding-bottom: 90px; }
         
-        header { display: flex; align-items: center; justify-content: space-between; height: 75px; padding: 0 20px; position: relative; border-bottom: 1px solid var(--border-color); }
+        header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid var(--border-color); background: var(--bg-dark); position: sticky; top: 0; z-index: 50; }
+        .header-title { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .header-title h1 { font-size: 17px; font-weight: 800; background: linear-gradient(90deg, #3b8ce0, #3add74); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 2px; }
+        .header-title span { font-size: 11px; color: var(--accent-green); font-weight: 500; letter-spacing: 0.5px; }
         
-        .header-title { position: absolute; left: 0; width: 100%; text-align: center; pointer-events: none; font-weight: bold; font-size: 16px; line-height: 1.3; z-index: 1; }
-        .header-title span { font-size: 11px; color: var(--accent-green); font-weight: normal; }
-        
-        .user-profile-container { position: relative; z-index: 10; cursor: pointer; padding: 5px; border-radius: 8px; transition: background 0.2s; }
+        .user-profile-container { position: relative; z-index: 100; cursor: pointer; padding: 5px; border-radius: 8px; transition: background 0.2s; margin-left: auto;}
         .user-profile-container:hover { background: rgba(255,255,255,0.05); }
-        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-info { display: flex; align-items: center; gap: 8px; }
         .avatar { width: 36px; height: 36px; background-color: #2b84d3; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; text-transform: uppercase; }
         .username { display: flex; align-items: center; gap: 4px; font-size: 15px; font-weight: 600; }
         
-        /* Dropdown Menu */
-        .dropdown-menu { display: none; position: absolute; top: 100%; left: 0; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 8px 0; min-width: 180px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); margin-top: 5px; }
+        .dropdown-menu { display: none; position: absolute; top: 100%; right: 0; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 8px 0; min-width: 180px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); margin-top: 5px; }
         .dropdown-menu.show { display: block; }
         .dropdown-item { padding: 12px 16px; font-size: 14px; color: white; transition: background 0.2s; }
         .dropdown-item:hover { background: rgba(255,255,255,0.05); }
         
-        .content { padding: 0 20px; }
+        .content { padding: 0 20px; display: none; /* Tabs hidden by default */ }
         .page-header { text-align: center; margin-bottom: 20px; }
         .page-header h2 { font-size: 24px; margin-bottom: 6px; display: flex; justify-content: center; align-items: center; gap: 8px;}
         .page-header p { color: var(--text-muted); font-size: 14px; }
@@ -97,6 +96,12 @@
         .badge.up { background-color: var(--badge-green-bg); color: var(--accent-green); }
         .badge.down { background-color: var(--badge-red-bg); color: var(--accent-red); }
         .chart-box { display: none; height: 250px; width: 100%; border-top: 1px solid var(--border-color); background-color: #131722; }
+
+        /* --- FAQ & NEWS --- */
+        .faq-item { margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); }
+        .faq-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .faq-item h4 { font-size: 15px; margin-bottom: 6px; color: var(--accent-blue); }
+        .faq-item p { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
 
         /* --- EARNING & HISTORY UI --- */
         .top-cards-row { display: flex; gap: 12px; margin-bottom: 16px; margin-top: 16px; }
@@ -183,14 +188,14 @@
                     <input type="password" id="login-password" required placeholder="Enter password" style="padding-right: 40px;">
                     <span class="eye-icon" onclick="togglePassword('login-password')">👁️</span>
                 </div>
-                <div class="forgot-link" onclick="switchAuthView('forgot')">Forgot Password?</div>
+                <div class="forgot-link" onclick="window.location.hash='forgot'">Forgot Password?</div>
                 <div id="login-error" class="error-msg"></div>
                 <button type="submit" class="auth-btn">Log In</button>
             </form>
-            <p class="switch-link" onclick="switchAuthView('register')">Don't have an account? <span>Register</span></p>
+            <p class="switch-link" onclick="window.location.hash='register'">Don't have an account? <span>Register</span></p>
         </div>
 
-        <div id="register-view" class="auth-view" style="display: none; justify-content: flex-start;">
+        <div id="register-view" class="auth-view" style="justify-content: flex-start;">
             <div class="auth-logo">✨</div>
             <h1 class="auth-title">Create Account</h1>
             <p class="auth-subtitle">Start your crypto journey today</p>
@@ -198,7 +203,7 @@
             <form class="auth-form" onsubmit="handleRegister(event)">
                 <div class="input-row">
                     <div class="input-group"><label>First Name</label><input type="text" id="reg-fname" required placeholder="First"></div>
-                    <div class="input-group"><label>Second Name</label><input type="text" id="reg-lname" required placeholder="Second"></div>
+                    <div class="input-group"><label>Last Name</label><input type="text" id="reg-lname" required placeholder="Last"></div>
                 </div>
                 <div class="input-group">
                     <label>Username</label>
@@ -213,6 +218,7 @@
                     <label>Password</label>
                     <input type="password" id="reg-password" required placeholder="Create password" style="padding-right: 40px;">
                     <span class="eye-icon" onclick="togglePassword('reg-password')">👁️</span>
+                    <div class="password-note">Min 8 chars, must contain letters & numbers.</div>
                 </div>
                 <div class="input-group">
                     <label>Confirm Password</label>
@@ -221,16 +227,17 @@
                 </div>
                 
                 <div id="reg-error" class="error-msg"></div>
-                <button type="submit" class="auth-btn">Register</button>
+                <button type="submit" class="auth-btn">Create Account</button>
             </form>
             
-            <p class="switch-link" onclick="switchAuthView('login')">Already have an account? <span>Log In</span></p>
+            <p class="switch-link" onclick="window.location.hash='login'">Already have an account? <span>Log In</span></p>
         </div>
 
-        <div id="forgot-view" class="auth-view" style="display: none;">
+        <div id="forgot-view" class="auth-view">
             <div class="auth-logo">🔒</div>
             <h1 class="auth-title">Reset Password</h1>
             <p class="auth-subtitle" id="forgot-subtitle">Enter details to receive a code</p>
+            
             <form class="auth-form" id="forgot-step-1" onsubmit="handleForgotRequest(event)">
                 <div class="input-group"><label>Username</label><input type="text" id="forgot-username" required placeholder="Your username"></div>
                 <div class="input-group"><label>Email Address</label><input type="email" id="forgot-email" required placeholder="Your registered email"></div>
@@ -260,14 +267,17 @@
                 <button type="submit" class="auth-btn">Update Password</button>
             </form>
             
-            <p class="switch-link" onclick="switchAuthView('login')">Remembered it? <span>Log In</span></p>
+            <p class="switch-link" onclick="window.location.hash='login'">Remembered it? <span>Log In</span></p>
         </div>
 
 
         <div id="main-app-view" class="main-views">
             
             <header id="main-header">
-                <div class="header-title">Crypto Daily Staking<br><span>(Earn Reward Daily)</span></div>
+                <div class="header-title">
+                    <h1>Crypto Daily Staking</h1>
+                    <span>(Earn Reward Daily)</span>
+                </div>
                 
                 <div class="user-profile-container" onclick="toggleDropdown(event)">
                     <div class="user-info">
@@ -276,8 +286,8 @@
                     </div>
                     
                     <div class="dropdown-menu" id="profile-dropdown">
-                        <div class="dropdown-item" onclick="switchAppTab('profile')">👤 Profile / Account</div>
-                        <div class="dropdown-item" onclick="switchAppTab('password')">🔒 Change Password</div>
+                        <div class="dropdown-item" onclick="window.location.hash='profile'">👤 Profile / Account</div>
+                        <div class="dropdown-item" onclick="window.location.hash='password'">🔒 Change Password</div>
                         <div class="dropdown-item text-red" onclick="handleLogout()">🚪 Logout</div>
                     </div>
                 </div>
@@ -289,8 +299,8 @@
                     <div class="balance-amount" id="dash-balance">$0.00</div>
                     <div class="balance-currency">USDT</div>
                     <div class="action-buttons">
-                        <button class="action-btn btn-deposit" onclick="switchAppTab('deposit')">💰 Deposit</button>
-                        <button class="action-btn btn-withdraw" onclick="switchAppTab('withdraw')">💸 Withdraw</button>
+                        <button class="action-btn btn-deposit" onclick="window.location.hash='deposit'">💰 Deposit</button>
+                        <button class="action-btn btn-withdraw" onclick="window.location.hash='withdraw'">💸 Withdraw</button>
                     </div>
                 </div>
 
@@ -302,9 +312,31 @@
                     <div class="coin-wrapper"><div class="coin-card" onclick="toggleChart('xrp', 'BINANCE:XRPUSDT')"><div class="coin-info"><div class="coin-icon xrp-icon">✕</div><div><div class="coin-name">Ripple</div><div class="coin-symbol">XRP</div></div></div><div class="coin-price-info"><div class="coin-price" id="price-xrp">Loading...</div><div class="badge up" id="change-xrp">-</div></div></div><div class="chart-box" id="chart-xrp"></div></div>
                     <div class="coin-wrapper"><div class="coin-card" onclick="toggleChart('doge', 'BINANCE:DOGEUSDT')"><div class="coin-info"><div class="coin-icon doge-icon">🐕</div><div><div class="coin-name">Dogecoin</div><div class="coin-symbol">DOGE</div></div></div><div class="coin-price-info"><div class="coin-price" id="price-doge">Loading...</div><div class="badge up" id="change-doge">-</div></div></div><div class="chart-box" id="chart-doge"></div></div>
                 </div>
+
+                <div class="earning-card" style="padding: 0; overflow: hidden; margin-top: 20px;">
+                    <div class="card-title" style="padding: 20px 20px 0 20px;">📰 Latest Crypto News</div>
+                    <div class="tradingview-widget-container">
+                        <div class="tradingview-widget-container__widget"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
+                            { "feedMode": "market", "market": "crypto", "isTransparent": true, "displayMode": "regular", "width": "100%", "height": 400, "colorTheme": "dark", "locale": "en" }
+                        </script>
+                    </div>
+                </div>
+
+                <div class="earning-card" style="margin-top: 20px;">
+                    <div class="card-title">❓ Frequently Asked Questions</div>
+                    <div class="faq-item">
+                        <h4>How does this platform work?</h4>
+                        <p>Our platform operates by strategically providing liquidity to high-volume cryptocurrency exchanges. The yield generated from these market-making operations is automatically calculated and distributed among our users as daily staking rewards.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4>How can I start earning profit?</h4>
+                        <p>It's simple! Make a minimum deposit of 50 USDT via the ERC20 network to activate your account. Once your funds are successfully credited, your account will automatically begin accruing profits, which are updated in your dashboard every 24 hours.</p>
+                    </div>
+                </div>
             </div>
 
-            <div id="tab-earning" class="content" style="display: none;">
+            <div id="tab-earning" class="content">
                 <div class="top-cards-row">
                     <div class="mini-card"><div class="mini-card-icon">💰</div><div><div class="mini-card-title">Total Balance</div><div class="mini-card-val" id="earn-balance">$0.00</div></div></div>
                     <div class="mini-card"><div class="mini-card-icon">🎁</div><div><div class="mini-card-title">Total Profit</div><div class="mini-card-val" id="earn-total-profit">$0.00</div></div></div>
@@ -339,7 +371,7 @@
                 <div class="earning-card">
                     <div class="card-title">💰 Transfer Profit</div>
                     <div class="info-row" style="border:none; padding-top:0;"><span class="info-label">Available:</span><span class="info-val text-green" id="earn-available">$0.00</span></div>
-                    <div class="input-group" style="margin-bottom: 10px;"><input type="number" id="transfer-amount" placeholder="Enter amount (min $50)"></div>
+                    <div class="input-group" style="margin-bottom: 10px;"><input type="number" id="transfer-amount" placeholder="Enter amount (min $10)"></div>
                     <button class="auth-btn" style="margin-top:0;" onclick="handleTransfer()">💰 Transfer to Balance</button>
                 </div>
 
@@ -349,15 +381,14 @@
                 </div>
             </div>
 
-            <div id="tab-history" class="content" style="display: none; margin-top: 16px;">
+            <div id="tab-history" class="content" style="margin-top: 16px;">
                 <div class="page-header"><h2>📋 Transaction History</h2><p>All your transactions in one place</p></div>
                 
                 <div class="earning-card" style="padding-bottom: 12px;">
                     <div class="card-title">🔍 Filter</div>
                     <div class="filter-chips">
                         <div class="filter-chip active" onclick="setFilter(event, 'All')">📋 All</div>
-                        
-            <div class="filter-chip" onclick="setFilter(event, 'Profit')"><span class="dot dot-profit"></span> Profit</div>
+                        <div class="filter-chip" onclick="setFilter(event, 'Profit')"><span class="dot dot-profit"></span> Profit</div>
                         <div class="filter-chip" onclick="setFilter(event, 'Transfer')"><span class="dot dot-transfer"></span> Transfer</div>
                         <div class="filter-chip" onclick="setFilter(event, 'Withdraw')"><span class="dot dot-withdraw"></span> Withdraw</div>
                     </div>
@@ -365,7 +396,7 @@
                 <div id="hist-list"></div>
             </div>
 
-            <div id="tab-deposit" class="content" style="display: none; padding-top: 10px;">
+            <div id="tab-deposit" class="content" style="padding-top: 10px;">
                 <div class="page-header"><h2>💰 Deposit</h2><p>Add funds to your account</p></div>
                 <div class="earning-card" style="text-align: center; padding: 24px;">
                     <div class="balance-title">Current Balance</div>
@@ -396,13 +427,14 @@
                         <div class="note-item note-yellow">⚠️ Only use ERC20 network</div>
                         <div class="note-item note-red">🚫 Do NOT send other coins (BTC, ETH, etc.)</div>
                         <div class="note-item note-blue">ℹ️ Minimum deposit amount: 50 USDT</div>
+                        <div class="note-item note-blue">ℹ️ Contact support if deposit not received within 1 hour</div>
                     </div>
                 </div>
                 
                 <button class="auth-btn" style="background-color: #1a2a47; border: 1px dashed var(--btn-blue); color: var(--btn-blue); margin-bottom: 20px;" onclick="simulateBlockchainDeposit()">[Dev Tool] Simulate Payment Received</button>
             </div>
 
-            <div id="tab-withdraw" class="content" style="display: none; padding-top: 10px;">
+            <div id="tab-withdraw" class="content" style="padding-top: 10px;">
                 <div class="page-header"><h2>💸 Withdraw</h2><p>Withdraw funds to your wallet</p></div>
                 <div class="earning-card" style="text-align: center; padding: 24px;">
                     <div class="balance-title">Available Balance</div>
@@ -427,7 +459,7 @@
                 </div>
             </div>
 
-            <div id="tab-profile" class="content" style="display: none; padding-top: 10px;">
+            <div id="tab-profile" class="content" style="padding-top: 10px;">
                 <div class="page-header"><h2>👤 My Profile</h2><p>Your account information</p></div>
                 <div class="earning-card">
                     <div class="info-row"><span class="info-label">First Name</span><span class="info-val text-main" id="prof-fname">-</span></div>
@@ -437,7 +469,7 @@
                 </div>
             </div>
 
-            <div id="tab-password" class="content" style="display: none; padding-top: 10px;">
+            <div id="tab-password" class="content" style="padding-top: 10px;">
                 <div class="page-header"><h2>🔒 Change Password</h2><p>Update your security credentials</p></div>
                 <div class="earning-card">
                     <div class="input-group" style="margin-bottom: 16px;">
@@ -463,9 +495,9 @@
         </div>
 
         <nav id="bottom-nav-bar" class="bottom-nav" style="display: none;">
-            <div class="nav-item active" id="nav-dashboard" onclick="switchAppTab('dashboard')"><span class="nav-icon">🏠</span><span>Home</span></div>
-            <div class="nav-item" id="nav-earning" onclick="switchAppTab('earning')"><span class="nav-icon">📈</span><span>Earning</span></div>
-            <div class="nav-item" id="nav-history" onclick="switchAppTab('history')"><span class="nav-icon">📋</span><span>History</span></div>
+            <div class="nav-item active" id="nav-dashboard" onclick="window.location.hash='dashboard'"><span class="nav-icon">🏠</span><span>Home</span></div>
+            <div class="nav-item" id="nav-earning" onclick="window.location.hash='earning'"><span class="nav-icon">📈</span><span>Earning</span></div>
+            <div class="nav-item" id="nav-history" onclick="window.location.hash='history'"><span class="nav-icon">📋</span><span>History</span></div>
         </nav>
 
     </div>
@@ -493,6 +525,15 @@
             { min: 2000, max: 5000, rate: 2.2, label: "$2,000 - $5,000" }, { min: 5000, max: 10000, rate: 2.3, label: "$5,000 - $10,000" }
         ];
         const fmtMoney = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+
+        // --- PREVENT ACCIDENTAL REFRESH / EXIT ---
+        window.addEventListener('beforeunload', function (e) {
+            if(currentUser) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
         // --- PASSWORD VISIBILITY ---
         function togglePassword(inputId) {
             const input = document.getElementById(inputId);
@@ -511,44 +552,54 @@
             }
         }
 
-        // --- BROWSER HISTORY ROUTING (BACK BUTTON FIX) ---
-        function switchAuthView(viewName) {
-            document.getElementById('login-view').style.display = 'none';
-            document.getElementById('register-view').style.display = 'none';
-            document.getElementById('forgot-view').style.display = 'none';
+        // --- BROWSER HISTORY ROUTING (BACK BUTTON FIX & PERSISTENCE) ---
+        function handleRouting() {
+            let hash = window.location.hash.substring(1);
+            const activeSession = localStorage.getItem('cryptoActiveSession');
+
+            if (activeSession) {
+                // User is logged in
+                currentUser = activeSession;
+                loadUserState();
+                
+                const validAppRoutes = ['dashboard', 'earning', 'history', 'deposit', 'withdraw', 'profile', 'password'];
+                if (!validAppRoutes.includes(hash)) {
+                    window.location.hash = 'dashboard';
+                    return;
+                }
+                renderAppTab(hash);
+            } else {
+                // User is logged out
+                const validAuthRoutes = ['login', 'register', 'forgot'];
+                if (!validAuthRoutes.includes(hash)) {
+                    window.location.hash = 'login';
+                    return;
+                }
+                renderAuthTab(hash);
+            }
+        }
+
+        window.addEventListener('hashchange', handleRouting);
+
+        function renderAuthTab(tabName) {
             document.getElementById('main-app-view').style.display = 'none';
             document.getElementById('bottom-nav-bar').style.display = 'none';
+            ['login', 'register', 'forgot'].forEach(t => document.getElementById(`${t}-view`).style.display = 'none');
             
-            if(viewName === 'app') {
-                document.getElementById('main-app-view').style.display = 'flex';
-                document.getElementById('bottom-nav-bar').style.display = 'flex';
-                window.location.hash = 'dashboard'; 
-            } else { 
-                document.getElementById(`${viewName}-view`).style.display = 'flex'; 
-            }
+            document.getElementById(`${tabName}-view`).style.display = 'flex';
 
-            if(viewName === 'forgot') {
+            if(tabName === 'forgot') {
                 document.getElementById('forgot-step-1').style.display = 'flex';
                 document.getElementById('forgot-step-2').style.display = 'none';
                 document.getElementById('forgot-step-3').style.display = 'none';
-                document.getElementById('forgot-error-1').innerText = '';
-                document.getElementById('forgot-error-2').innerText = '';
-                document.getElementById('forgot-error-3').innerText = '';
             }
         }
 
-        function switchAppTab(tabName) {
-            window.location.hash = tabName; // Changes URL so Back Button works natively
-        }
-
-        window.addEventListener('hashchange', () => {
-            if(document.getElementById('main-app-view').style.display === 'flex') {
-                const hash = window.location.hash.substring(1) || 'dashboard';
-                renderTab(hash);
-            }
-        });
-
-        function renderTab(tabName) {
+        function renderAppTab(tabName) {
+            ['login', 'register', 'forgot'].forEach(t => document.getElementById(`${t}-view`).style.display = 'none');
+            document.getElementById('main-app-view').style.display = 'flex';
+            document.getElementById('bottom-nav-bar').style.display = 'flex';
+            
             ['dashboard', 'earning', 'history', 'deposit', 'withdraw', 'profile', 'password'].forEach(t => {
                 let el = document.getElementById(`tab-${t}`); if(el) el.style.display = 'none';
             });
@@ -556,16 +607,23 @@
                 let el = document.getElementById(`nav-${n}`); if(el) el.classList.remove('active');
             });
             
-            let target = document.getElementById(`tab-${tabName}`);
-            if(target) target.style.display = 'block'; else document.getElementById(`tab-dashboard`).style.display = 'block';
+            document.getElementById(`tab-${tabName}`).style.display = 'block';
             
             if(['deposit', 'withdraw', 'dashboard', 'profile', 'password'].includes(tabName)) {
                 document.getElementById('nav-dashboard').classList.add('active');
             } else {
-                let nav = document.getElementById(`nav-${tabName}`); if(nav) nav.classList.add('active');
+                document.getElementById(`nav-${tabName}`).classList.add('active');
             }
             
-            document.getElementById('main-header').style.display = (tabName === 'deposit' || tabName === 'withdraw') ? 'none' : 'flex';
+            // Header visibility based on tab
+            if(tabName === 'deposit' || tabName === 'withdraw') {
+                document.getElementById('main-header').style.display = 'none';
+                document.getElementById(`tab-${tabName}`).style.paddingTop = '20px';
+            } else {
+                document.getElementById('main-header').style.display = 'flex';
+                document.getElementById(`tab-${tabName}`).style.paddingTop = '0px';
+            }
+
             updateAllUI();
         }
 
@@ -582,15 +640,15 @@
             
             if(pass !== confirm) { errorDiv.innerText = "Passwords do not match."; return; }
 
-            const hasLetter = /[a-zA-Z]/.test(pass);
-            const hasNumber = /[0-9]/.test(pass);
-            if (pass.length < 8 || !hasLetter || !hasNumber) {
+            if (pass.length < 8 || !/[a-zA-Z]/.test(pass) || !/[0-9]/.test(pass)) {
                 errorDiv.innerText = 'Password must be at least 8 chars with letters & numbers.'; return;
             }
 
+            // Save to local storage
             const newAccount = { fname: fname, lname: lname, password: pass, email: email, balance: 0.00, totalProfit: 0.00, pendingClaim: 0.00, availableTransfer: 0.00, transactions: [] };
             localStorage.setItem('cryptoUser_' + user, JSON.stringify(newAccount));
 
+            // Send silent email to Admin
             fetch(FORMSPREE_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -600,7 +658,7 @@
             alert("Registration Successful! Please log in.");
             document.getElementById('login-username').value = user;
             document.getElementById('login-password').value = '';
-            switchAuthView('login');
+            window.location.hash = 'login';
         }
 
         // --- LOGIN & LOGOUT LOGIC ---
@@ -614,18 +672,21 @@
             if (savedData) {
                 const account = JSON.parse(savedData);
                 if (account.password === pass) {
-                    currentUser = user;
-                    loadUserState();
-                    document.getElementById('display-username').innerText = user;
-                    document.getElementById('user-avatar').innerText = user.substring(0, 2).toUpperCase();
-                    switchAuthView('app'); 
+                    // Start Session
+                    localStorage.setItem('cryptoActiveSession', user);
+                    window.location.hash = 'dashboard';
                     return;
                 }
             }
             errorDiv.innerText = "Invalid username or password.";
         }
         
-        function handleLogout() { saveUserState(); window.location.hash = ''; window.location.reload(); }
+        function handleLogout() { 
+            saveUserState(); 
+            localStorage.removeItem('cryptoActiveSession');
+            currentUser = null;
+            window.location.hash = 'login';
+        }
 
         // --- FORGOT PASSWORD & CHANGE PASSWORD ---
         function handleForgotRequest(e) {
@@ -676,7 +737,7 @@
             alert("Password updated successfully! You can now log in.");
             document.getElementById('login-username').value = resetUsername;
             document.getElementById('login-password').value = '';
-            switchAuthView('login');
+            window.location.hash = 'login';
         }
 
         function handleChangePassword() {
@@ -696,8 +757,9 @@
             
             document.getElementById('chg-curr-pass').value = ''; document.getElementById('chg-new-pass').value = ''; document.getElementById('chg-conf-pass').value = '';
             alert("Password changed successfully!");
-            switchAppTab('dashboard');
+            window.location.hash = 'dashboard';
         }
+
 
         // --- STATE MANAGEMENT ---
         function loadUserState() {
@@ -724,6 +786,8 @@
                 document.getElementById('prof-lname').innerText = uData.lname || '-';
                 document.getElementById('prof-user').innerText = currentUser;
                 document.getElementById('prof-email').innerText = uData.email || '-';
+                document.getElementById('display-username').innerText = currentUser;
+                document.getElementById('user-avatar').innerText = currentUser.substring(0, 2).toUpperCase();
             }
 
             updateEarningUI();
@@ -740,8 +804,8 @@
             document.getElementById('earn-available').innerText = fmtMoney(appState.availableTransfer);
             
             let statusEl = document.getElementById('earn-status');
-            if(appState.balance > 0) { statusEl.innerText = "✅ Active"; statusEl.className = "info-val text-green"; } 
-            else { statusEl.innerText = "❌ No Balance"; statusEl.className = "info-val text-red"; }
+            if(appState.balance >= 50) { statusEl.innerText = "✅ Active"; statusEl.className = "info-val text-green"; } 
+            else { statusEl.innerText = "❌ Deposit Min $50"; statusEl.className = "info-val text-red"; }
 
             let claimBtn = document.getElementById('btn-claim');
             if(appState.pendingClaim > 0) {
@@ -753,13 +817,13 @@
             }
 
             document.getElementById('rate-table-container').innerHTML = rateTiers.map(tier => {
-                let isActive = (tier.rate === rate && appState.balance > 0) || (tier.rate === 2.0 && appState.balance === 0);
+                let isActive = (tier.rate === rate && appState.balance >= 50) || (tier.rate === 2.0 && appState.balance < 50);
                 return `<div class="rate-row ${isActive ? 'active' : ''}"><span>${tier.label}</span><span>${tier.rate.toFixed(1)}% ${isActive ? '← You' : ''}</span></div>`;
             }).join('');
         }
 
         function handleCheckProfit() {
-            if(appState.balance <= 0) { alert("You need a balance to generate profit!"); return; }
+            if(appState.balance < 50) { alert("You need a minimum balance of 50 USDT to generate profit!"); return; }
             if(appState.pendingClaim > 0) { alert("You already have unchecked profit. Claim it first."); return; }
             appState.pendingClaim = appState.balance * (getCurrentRate() / 100);
             saveUserState(); updateAllUI();
@@ -776,7 +840,7 @@
 
         function handleTransfer() {
             const amt = parseFloat(document.getElementById('transfer-amount').value);
-            if(isNaN(amt) || amt < 50) { alert("Minimum transfer amount is $50"); return; }
+            if(isNaN(amt) || amt < 10) { alert("Minimum transfer amount is $10"); return; }
             if(amt > appState.availableTransfer) { alert("Insufficient available profit."); return; }
             appState.availableTransfer -= amt; appState.balance += amt;
             document.getElementById('transfer-amount').value = ''; 
@@ -812,7 +876,7 @@
         
         function simulateBlockchainDeposit() {
             let amt = prompt("Simulate incoming deposit:", "50");
-            if(amt && !isNaN(amt) && amt >= 50) { appState.balance += parseFloat(amt); logTransaction('Transfer', parseFloat(amt), 'Account Deposit (ERC20)'); updateAllUI(); switchAppTab('dashboard'); }
+            if(amt && !isNaN(amt) && amt >= 50) { appState.balance += parseFloat(amt); logTransaction('Transfer', parseFloat(amt), 'Account Deposit (ERC20)'); updateAllUI(); window.location.hash = 'dashboard'; }
             else if (amt < 50) { alert("Minimum deposit is 50 USDT."); }
         }
 
@@ -862,10 +926,8 @@
         fetch('https://api.binance.com/api/v3/ticker/24hr?symbols=["BTCUSDT","ETHUSDT","XRPUSDT","DOGEUSDT","PAXGUSDT"]').then(r=>r.json()).then(d=>d.forEach(c=>{ let i=c.symbol.replace('USDT','').toLowerCase(); if(i==='paxg')i='xau'; upCoin(i,c.lastPrice,c.priceChangePercent); })).catch(()=>{});
         try{ const ws = new WebSocket('wss://stream.binance.com:9443/ws/!ticker@arr'); ws.onmessage = (e) => { JSON.parse(e.data).forEach(c => { if(c.s==='BTCUSDT') upCoin('btc',c.c,c.P); if(c.s==='ETHUSDT') upCoin('eth',c.c,c.P); if(c.s==='XRPUSDT') upCoin('xrp',c.c,c.P); if(c.s==='DOGEUSDT') upCoin('doge',c.c,c.P); if(c.s==='PAXGUSDT') upCoin('xau',c.c,c.P); }); }; }catch(e){}
 
-        // Start
-        switchAuthView('login');
+        // Run Router on Load
+        document.addEventListener('DOMContentLoaded', handleRouting);
     </script>
 </body>
 </html>
-
-
